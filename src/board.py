@@ -6,9 +6,11 @@ class Board:
         # rotates boars 180 degrees, so that black pieces are at the bottom
         self.rotated = rotated
         self.board = self.__create()
+        self.rank_mapping = self.__create_rank_mapping()
+        self.file_mapping = self.__create_file_mapping()
 
     def __create(self):
-        board = self.__create_empty_board()
+        board = self.__create_empty_grid()
         white_ranks = board[:2] if self.rotated else board[-2:]
         black_ranks = board[-2:] if self.rotated else board[:2]
 
@@ -17,7 +19,7 @@ class Board:
 
         return board
 
-    def __create_empty_board(self):
+    def __create_empty_grid(self):
         return [[None for i in range(8)] for y in range(8)]
 
     def __populate_starter_ranks(self, starter_ranks, color):
@@ -45,8 +47,17 @@ class Board:
                 for i in range(len(starter_ranks[1])):
                     starter_ranks[1][i] = "PB"
 
+    def __create_rank_mapping(self):
+        # this maps a chess rank position (A, B, C, etc..) to a X position on the 8x8 grid
+        if self.rotated:
+
+    def __create_file_mapping(self):
+        # this maps a chess file position (1, 2, 3, et..) to a Y position on the 8x8 grid
+        if self.rotated:
+
     def display(self):
-        print(self.board)
+        for rank in self.board:
+            print(rank)
 
 
 

@@ -10,6 +10,3 @@ if __name__ == "__main__":
     # print(Style.DIM + 'and in dim text')
     board = Board()
     board.display()
-
-    board2 = Board(True)
-    board2.display()
