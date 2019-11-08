@@ -5,11 +5,11 @@ class Board:
     def __init__(self, rotated = False):
         # rotates boars 180 degrees, so that black pieces are at the bottom
         self.rotated = rotated
-        self.board = self.__create()
+        self.board = self.__create_chess_grid()
         self.rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
         self.file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
 
-    def __create(self):
+    def __create_chess_grid(self):
         board = self.__create_empty_grid()
         white_ranks = board[:2] if self.rotated else board[-2:]
         black_ranks = board[-2:] if self.rotated else board[:2]
@@ -48,16 +48,16 @@ class Board:
                     starter_ranks[1][i] = "PB"
 
     def __create_rank_to_xindex_mapping(self):
-        # this maps a chess rank position (A, B, C, etc..) to a X position on the 8x8 grid
-        ranks = [chr(i).upper() for i in range(97, 105)]
+        # this maps a chess rank position (1, 2, 3, et..) to a X position on the 8x8 grid
+        ranks = [str(i) for i in range(1, 9)]
         if self.rotated:
-            return {rank: index for index, rank in enumerate(ranks[::-1])}
-        else:
             return {rank: index for index, rank in enumerate(ranks)}
+        else:
+            return {rank: index for index, rank in enumerate(ranks[::-1])}
 
     def __create_file_to_yindex_mapping(self):
-        # this maps a chess file position (1, 2, 3, et..) to a Y position on the 8x8 grid
-        files = [str(i) for i in range(1, 9)]
+        # this maps a chess file position (A, B, C, etc..) to a Y position on the 8x8 grid
+        files = [chr(i).upper() for i in range(97, 105)]
         if self.rotated:
             return {file: index for index, file in enumerate(files[::-1])}
         else:
@@ -66,6 +66,12 @@ class Board:
     def display(self):
         for rank in self.board:
             print(rank)
+
+    def get_piece_on_position(self, file, rank):
+        x_index = self.rank_to_xindex_mapping[rank]
+        y_index = self.file_to_yindex_mapping[file]
+        return self.board[x_index][y_index]
+
 
 
 
