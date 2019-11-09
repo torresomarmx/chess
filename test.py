@@ -8,7 +8,7 @@ if __name__ == "__main__":
     # print(Fore.RED + 'some red text')
     # print(Back.GREEN + 'and with a green background')
     # print(Style.DIM + 'and in dim text')
-    board = Board(True)
+    board = Board()
     board.display()
     # standard notation is file-first, so A1
     pos = board.get_piece_on_position("A", "1")

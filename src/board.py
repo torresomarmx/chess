@@ -1,4 +1,5 @@
 from src.util import chess_constants
+from colorama import Fore, Back, Style
 
 class Board:
 
@@ -64,8 +65,15 @@ class Board:
             return {file: index for index, file in enumerate(files)}
 
     def display(self):
-        for rank in self.board:
-            print(rank)
+        for rank_index, rank in enumerate(self.board):
+            rank_index += 1
+            for file_index, file in enumerate(rank):
+                file_index += 1
+                if rank_index % 2 == 0:
+                    print(Back.WHITE + "   ", end="") if file_index % 2 == 0 else print(Back.RED + "   ", end="")
+                else:
+                    print(Back.RED + "   ", end="") if file_index % 2 == 0 else print(Back.WHITE + "   ", end="")
+            print(Back.RESET)
 
     def get_piece_on_position(self, file, rank):
         x_index = self.rank_to_xindex_mapping[rank]
