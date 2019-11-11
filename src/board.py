@@ -1,5 +1,7 @@
 from src.util import chess_constants
 from colorama import Fore, Back, Style
+from src.pieces.pawn import Pawn
+from src.pieces.rook import Rook
 
 class Board:
 
@@ -15,8 +17,9 @@ class Board:
         white_ranks = board[:2] if self.rotated else board[-2:]
         black_ranks = board[-2:] if self.rotated else board[:2]
 
-        self.__populate_starter_ranks(white_ranks, chess_constants.WHITE_NAME)
-        self.__populate_starter_ranks(black_ranks, chess_constants.BLACK_NAME)
+        # TODO: write pure functions
+        self.__populate_starter_ranks(white_ranks, chess_constants.WHITE_COLOR)
+        self.__populate_starter_ranks(black_ranks, chess_constants.BLACK_COLOR)
 
         return board
 
@@ -24,29 +27,27 @@ class Board:
         return [[None for i in range(8)] for y in range(8)]
 
     def __populate_starter_ranks(self, starter_ranks, color):
-        if color == chess_constants.WHITE_NAME:
-            # if rotated then white pieces are on top
-            if self.rotated:
-                for i in range(len(starter_ranks[0])):
-                    starter_ranks[0][i] = "SW"
-                for i in range(len(starter_ranks[1])):
-                    starter_ranks[1][i] = "PW"
-            else:
-                for i in range(len(starter_ranks[0])):
-                    starter_ranks[0][i] = "PW"
-                for i in range(len(starter_ranks[1])):
-                    starter_ranks[1][i] = "SW"
-        elif color == chess_constants.BLACK_NAME:
-            if self.rotated:
-                for i in range(len(starter_ranks[0])):
-                    starter_ranks[0][i] = "PB"
-                for i in range(len(starter_ranks[1])):
-                    starter_ranks[1][i] = "SB"
-            else:
-                for i in range(len(starter_ranks[0])):
-                    starter_ranks[0][i] = "SB"
-                for i in range(len(starter_ranks[1])):
-                    starter_ranks[1][i] = "PB"
+        # if rotated then
+        top_rank_index = 0
+        bottom_rank_index = 1
+        for y in range(len(starter_ranks[top_rank_index])):
+            # rooks
+            if y in Rook.STARTER_Y_INDICES:
+                starter_ranks[top_rank_index][y] = Rook(top_rank_index, y, color)
+            # bishops
+            if y in Bishop.STARTER_Y_INDICES:
+
+
+        for i in range(len(starter_ranks[bottom_rank_index])):
+            starter_ranks[bottom_rank_index][i] = Pawn(bottom_rank_index, i, color)
+
+        # if self.rotated:
+        # else:
+        #     for i in range(len(starter_ranks[top_rank_index])):
+        #         starter_ranks[top_rank_index][i] = Pawn(top_rank_index, i, color)
+        #
+        #     for i in range(len(starter_ranks[bottom_rank_index])):
+        #         starter_ranks[bottom_rank_index][i] = "SW"
 
     def __create_rank_to_xindex_mapping(self):
         # this maps a chess rank position (1, 2, 3, et..) to a X position on the 8x8 grid
