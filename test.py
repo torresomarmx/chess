@@ -10,6 +10,10 @@ if __name__ == "__main__":
     # print(Style.DIM + 'and in dim text')
     board = Board()
     board.display()
+    board.flip_display_board()
+    board.display()
+    board.flip_display_board()
+    board.display()
     # standard notation is file-first, so A1
-    pos = board.get_piece_on_position("A", "1")
-    print(pos)
+    # pos = board.get_piece_on_position("A", "1")
+    # print(pos)

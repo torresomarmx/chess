@@ -6,9 +6,9 @@ class Board:
 
     def __init__(self, flip_board = False):
         self.grid = self.__create_chess_grid()
-        self.display_board = self.grid
         self.rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
         self.file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
+        self.display_board = self.grid
         # flipped means black is on bottom, white is on top
         self.flipped = False
 
@@ -31,59 +31,61 @@ class Board:
 
         new_display_board = new_display_board[::-1]
 
-        self.flipped = True if not self.flipped else False
+        self.flipped = False if self.flipped else True
         self.display_board = new_display_board
 
     def __create_empty_grid(self):
-        return [[None for i in range(8)] for y in range(8)]
+        return [[None for x in range(8)] for y in range(8)]
 
     def __create_starter_ranks(self, color):
-        starter_ranks = [[None for i in range(8)] for y in range(2)]
+        starter_ranks = [[None for x in range(8)] for y in range(2)]
         pawn_rank_index = 0 if color == WHITE_COLOR else 1
         major_pieces_rank_index = 1 if color == WHITE_COLOR else 0
 
         # first create pawns
-        for y in range(len(starter_ranks[pawn_rank_index])):
-            starter_ranks[pawn_rank_index][y] = Pawn(pawn_rank_index, y, color)
+        for i in range(8):
+            starter_ranks[pawn_rank_index][i] = Pawn(pawn_rank_index, i, color)
 
         # then create major pieces
-        for y in range(len(starter_ranks[major_pieces_rank_index])):
+        for i in range(len(starter_ranks[major_pieces_rank_index])):
             # rooks
-            if y in Rook.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Rook(major_pieces_rank_index, y, color)
+            if i in Rook.STARTER_Y_INDICES:
+                starter_ranks[major_pieces_rank_index][i] = Rook(major_pieces_rank_index, i, color)
             # knights
-            elif y in Knight.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Knight(major_pieces_rank_index, y, color)
+            elif i in Knight.STARTER_Y_INDICES:
+                starter_ranks[major_pieces_rank_index][i] = Knight(major_pieces_rank_index, i, color)
             # bishops
-            elif y in Bishop.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Bishop(major_pieces_rank_index, y, color)
+            elif i in Bishop.STARTER_Y_INDICES:
+                starter_ranks[major_pieces_rank_index][i] = Bishop(major_pieces_rank_index, i, color)
             # king
-            elif y == King.DEFAULT_STARTER_Y_INDEX:
-                starter_ranks[major_pieces_rank_index][y] = King(major_pieces_rank_index, y, color)
+            elif i == King.DEFAULT_STARTER_Y_INDEX:
+                starter_ranks[major_pieces_rank_index][i] = King(major_pieces_rank_index, i, color)
             # queen
-            elif y == Queen.DEFAULT_STARTER_Y_INDEX:
-                starter_ranks[major_pieces_rank_index][y] = Queen(major_pieces_rank_index, y, color)
+            elif i == Queen.DEFAULT_STARTER_Y_INDEX:
+                starter_ranks[major_pieces_rank_index][i] = Queen(major_pieces_rank_index, i, color)
 
         return starter_ranks
 
     def __create_rank_to_xindex_mapping(self):
         # this maps a chess rank position (1, 2, 3, et..) to a X position on the 8x8 grid
         ranks = [str(i) for i in range(1, 9)]
-        if self.rotated:
-            return {rank: index for index, rank in enumerate(ranks)}
-        else:
-            return {rank: index for index, rank in enumerate(ranks[::-1])}
+        return {rank: index for index, rank in enumerate(ranks[::-1])}
 
     def __create_file_to_yindex_mapping(self):
         # this maps a chess file position (A, B, C, etc..) to a Y position on the 8x8 grid
         files = [chr(i).upper() for i in range(97, 105)]
-        if self.rotated:
-            return {file: index for index, file in enumerate(files[::-1])}
-        else:
-            return {file: index for index, file in enumerate(files)}
+        return {file: index for index, file in enumerate(files)}
 
     def display(self):
+        ranks = list(self.rank_to_xindex_mapping.keys())
+        files = list(self.file_to_yindex_mapping.keys())
+        if self.flipped:
+            ranks = ranks[::-1]
+            files = files[::-1]
+
         for rank_index, rank in enumerate(self.display_board):
+            # print rank number
+            print(Fore.WHITE + ranks[rank_index] + " ", end="")
             for file_index, file in enumerate(rank):
                 piece = self.display_board[rank_index][file_index]
                 symbol = "   " if piece is None else " {} ".format(Fore.BLACK + piece.symbol)
@@ -93,6 +95,13 @@ class Board:
                     print(Back.RED + symbol, end="") if file_index % 2 == 0 else print(Back.WHITE + symbol, end="")
             # starting new rank, so reset Back
             print(Back.RESET)
+
+        # print files
+        print("  ", end="")
+        for file in files:
+            print(" {} ".format(Fore.WHITE + file), end="")
+        print()
+
 
     def get_piece_on_position(self, file, rank):
         x_index = self.rank_to_xindex_mapping[rank]
