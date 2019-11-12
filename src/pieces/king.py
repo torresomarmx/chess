@@ -3,7 +3,7 @@ from src.util.chess_constants import BLACK_COLOR
 class King:
     BLACK_SYMBOL = "♚"
     WHITE_SYMBOL = "♔"
-    STARTER_Y_INDEX = 4
+    DEFAULT_STARTER_Y_INDEX = 4
 
     def __init__(self, x_position, y_position, color):
         self.x_position = x_position
