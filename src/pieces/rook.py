@@ -9,4 +9,10 @@ class Rook:
         self.x_position = x_position
         self.y_position = y_position
         self.color = color
-        self.symbol = Rook.BLACK_SYMBOL if self.color == BLACK_COLOR else Rook.WHITE_SYMBOL
+        self.__symbol = Rook.BLACK_SYMBOL if self.color == BLACK_COLOR else Rook.WHITE_SYMBOL
+
+    @property
+    def symbol(self):
+        return self.__symbol
+
+
