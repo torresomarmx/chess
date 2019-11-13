@@ -5,34 +5,65 @@ from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
 class Board:
 
     def __init__(self, flip_board = False):
-        self.grid = self.__create_chess_grid()
-        self.rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
-        self.file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
-        self.display_board = self.grid
+        self.__grid = self.__create_chess_grid()
+        self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
+        self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
+        self.__display_board = self.__grid
         # flipped means black is on bottom, white is on top
-        self.flipped = False
+        self.__flipped = False
 
         # if flip_board rotate 180 degrees, so that black is at the bottom. Default is white on bottom, black on top
         if flip_board:
             self.flip_display_board()
 
-    def __create_chess_grid(self):
-        board = self.__create_empty_grid()
-
-        board[-2:] = self.__create_starter_ranks(WHITE_COLOR)
-        board[:2] = self.__create_starter_ranks(BLACK_COLOR)
-
-        return board
-
     def flip_display_board(self):
         new_display_board = [[] for y in range(8)]
-        for index, rank in enumerate(self.display_board):
+        for index, rank in enumerate(self.__display_board):
             new_display_board[index] = rank[::-1]
 
         new_display_board = new_display_board[::-1]
 
-        self.flipped = False if self.flipped else True
-        self.display_board = new_display_board
+        self.__flipped = False if self.__flipped else True
+        self.__display_board = new_display_board
+
+    def display(self):
+        ranks = list(self.__rank_to_xindex_mapping.keys())
+        files = list(self.__file_to_yindex_mapping.keys())
+        if self.__flipped:
+            ranks = ranks[::-1]
+            files = files[::-1]
+
+        for rank_index, rank in enumerate(self.__display_board):
+            # print rank number
+            print(Fore.WHITE + ranks[rank_index] + " ", end="")
+            for file_index, file in enumerate(rank):
+                piece = self.__display_board[rank_index][file_index]
+                symbol = "   " if piece is None else " {} ".format(Fore.BLACK + piece.symbol)
+                if rank_index % 2 == 0:
+                    print(Back.WHITE + symbol, end="") if file_index % 2 == 0 else print(Back.RED + symbol, end="")
+                else:
+                    print(Back.RED + symbol, end="") if file_index % 2 == 0 else print(Back.WHITE + symbol, end="")
+            # starting new rank, so reset Back
+            print(Back.RESET)
+
+        # print files
+        print("  ", end="")
+        for file in files:
+            print(" {} ".format(Fore.WHITE + file), end="")
+        print()
+
+    def get_piece_on_position(self, file, rank):
+        x_index = self.__rank_to_xindex_mapping[rank]
+        y_index = self.__file_to_yindex_mapping[file]
+        return self.__grid[x_index][y_index]
+
+    def __create_chess_grid(self):
+        grid = self.__create_empty_grid()
+
+        grid[-2:] = self.__create_starter_ranks(WHITE_COLOR)
+        grid[:2] = self.__create_starter_ranks(BLACK_COLOR)
+
+        return grid
 
     def __create_empty_grid(self):
         return [[None for x in range(8)] for y in range(8)]
@@ -75,38 +106,6 @@ class Board:
         # this maps a chess file position (A, B, C, etc..) to a Y position on the 8x8 grid
         files = [chr(i).upper() for i in range(97, 105)]
         return {file: index for index, file in enumerate(files)}
-
-    def display(self):
-        ranks = list(self.rank_to_xindex_mapping.keys())
-        files = list(self.file_to_yindex_mapping.keys())
-        if self.flipped:
-            ranks = ranks[::-1]
-            files = files[::-1]
-
-        for rank_index, rank in enumerate(self.display_board):
-            # print rank number
-            print(Fore.WHITE + ranks[rank_index] + " ", end="")
-            for file_index, file in enumerate(rank):
-                piece = self.display_board[rank_index][file_index]
-                symbol = "   " if piece is None else " {} ".format(Fore.BLACK + piece.symbol)
-                if rank_index % 2 == 0:
-                    print(Back.WHITE + symbol, end="") if file_index % 2 == 0 else print(Back.RED + symbol, end="")
-                else:
-                    print(Back.RED + symbol, end="") if file_index % 2 == 0 else print(Back.WHITE + symbol, end="")
-            # starting new rank, so reset Back
-            print(Back.RESET)
-
-        # print files
-        print("  ", end="")
-        for file in files:
-            print(" {} ".format(Fore.WHITE + file), end="")
-        print()
-
-
-    def get_piece_on_position(self, file, rank):
-        x_index = self.rank_to_xindex_mapping[rank]
-        y_index = self.file_to_yindex_mapping[file]
-        return self.grid[x_index][y_index]
 
 
 
