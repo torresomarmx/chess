@@ -16,12 +16,58 @@ class Board:
         if flip_board:
             self.flip_display_board()
 
-    def flip_display_board(self):
+    def is_potential_move_valid(self, piece, move, is_unique_attacking_move = False):
+        piece_color = piece.color
+        current_x_position = piece.current_position[0]
+        current_y_position = piece.current_position[1]
+        potential_x_position = current_x_position + move[0]
+        potential_y_position = current_y_position + move[1]
+        # first check if potential position is out of bounds
+        if (potential_x_position) > 7 or (potential_x_position) < 0:
+            return False
+        if (potential_y_position) > 7 or (potential_y_position) < 0:
+            return False
+        # if not out of bounds then FIRST check to see if move is_unique_attacking_move.
+        # If it is, then check to see if there is a piece to attack
+        piece_at_potential_position = self.__grid[potential_x_position][potential_y_position]
+        if is_unique_attacking_move and piece_at_potential_position.color != piece_color:
+            return True
+        # else check to see that there is nothing blocking the move
+        if piece_at_potential_position is None or piece_at_potential_position.color != piece_color:
+            return True
+
+    def get_available_positions_for_piece(self, piece):
+        available_positions = set()
+        current_x_position = piece.current_position[0]
+        current_y_position = piece.current_position[1]
+
+        for move in piece.legal_moves:
+            if self.is_potential_move_valid(piece, move):
+                potential_x_position = current_x_position + move[0]
+                potential_y_position = current_y_position + move[1]
+                available_positions.add((potential_x_position, potential_y_position))
+
+        # then check to see if piece, like the Pawn, has unique attacking moves
+        unique_attacking_moves = piece.get_unique_attacking_moves
+        if len(unique_attacking_moves) != 0:
+            for move in unique_attacking_moves:
+                if self.is_potential_move_valid(piece, move, True):
+                    potential_x_position = current_x_position + move[0]
+                    potential_y_position = current_y_position + move[1]
+                    available_positions.add((potential_x_position, potential_y_position))
+
+        return available_positions
+
+    def get_flipped_board(self):
         new_display_board = [[] for y in range(8)]
         for index, rank in enumerate(self.__display_board):
             new_display_board[index] = rank[::-1]
 
         new_display_board = new_display_board[::-1]
+        return new_display_board
+
+    def flip_display_board(self):
+        new_display_board = self.get_flipped_board()
 
         self.__flipped = False if self.__flipped else True
         self.__display_board = new_display_board
