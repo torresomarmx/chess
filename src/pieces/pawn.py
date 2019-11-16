@@ -1,30 +1,64 @@
 from .piece import Piece
+from src.util.chess_constants import BLACK_COLOR
 
 class Pawn(Piece):
     BLACK_SYMBOL = "♟"
     WHITE_SYMBOL = "♙"
 
-    TOP_TO_BOTTOM_NATURAL_MOVES = ()
-    TOP_TO_BOTTOM_UNIQUE_ATTACKING_MOVES  = ()
-    BOTTOM_TO_TOP_NATURAL_MOVES = ()
-    BOTTOM_TO_TOP_UNIQUE_ATTACKING_MOVES = ()
+    NORTH_TO_SOUTH_ORIENTATION = "N"
+    SOUTH_TO_NORTH_ORIENTATION = "S"
 
-    def __init__(self, x_position, y_position, color):
-        Piece.__init__(self, x_position, y_position, color)
+    NORTH_TO_SOUTH_ONE_STEP_MOVES = {(1, 0)}
+    NORTH_TO_SOUTH_LEGAL_FIRST_MOVE = (2, 0)
+    NORTH_TO_SOUTH_UNIQUE_ATTACKING_MOVES = {(1, -1), (1, 1)}
+    NORTH_TO_SOUTH_STARTER_RANK = 1
 
-    def white_symbol(cls):
-        return cls.WHITE_SYMBOL
+    SOUTH_TO_NORTH_ONE_STEP_MOVES = {(-1, 0)}
+    SOUTH_TO_NORTH_LEGAL_FIRST_MOVE = (-2, 0)
+    SOUTH_TO_NORTH_UNIQUE_ATTACKING_MOVES = {(-1, 1), (-1, -1)}
+    SOUTH_TO_NORTH_STARTER_RANK = 6
 
-    def black_symbol(cls):
-        return cls.BLACK_SYMBOL
+    def __init__(self, position, color):
+        symbol = Pawn.BLACK_SYMBOL if color == BLACK_COLOR else Pawn.WHITE_SYMBOL
+        orientation = Pawn.NORTH_TO_SOUTH_ORIENTATION if color == BLACK_COLOR else Pawn.SOUTH_TO_NORTH_ORIENTATION
+        Piece.__init__(self, position, color, symbol, orientation)
 
-    def is_sliding_piece(cls):
+    @staticmethod
+    def is_sliding_piece():
         return False
 
-    def unique_attacking_moves(cls):
-        return cls.
+    def get_unique_attacking_moves(self):
+        if self.orientation == Pawn.NORTH_TO_SOUTH_ORIENTATION:
+            return Pawn.NORTH_TO_SOUTH_UNIQUE_ATTACKING_MOVES
 
-    def potential_moves(self, orientation):
+        return Pawn.SOUTH_TO_NORTH_UNIQUE_ATTACKING_MOVES
+
+    def get_one_step_moves(self):
+        if self.orientation == Pawn.NORTH_TO_SOUTH_ORIENTATION:
+            one_step_moves = Pawn.NORTH_TO_SOUTH_ONE_STEP_MOVES
+            if not self.__made_first_move():
+                one_step_moves.add(Pawn.NORTH_TO_SOUTH_LEGAL_FIRST_MOVE)
+
+            return one_step_moves
+        else:
+            one_step_moves = Pawn.SOUTH_TO_NORTH_ONE_STEP_MOVES
+            if not self.__made_first_move():
+                one_step_moves.add(Pawn.SOUTH_TO_NORTH_LEGAL_FIRST_MOVE)
+
+            return Pawn.SOUTH_TO_NORTH_ONE_STEP_MOVES
+
+    def switch_orientation(self):
+        north = Pawn.NORTH_TO_SOUTH_ORIENTATION
+        south = Pawn.SOUTH_TO_NORTH_ORIENTATION
+        self.orientation = north if self.orientation == south else south
+
+    def __made_first_move(self):
+        current_rank = self.current_position[0]
+        if self.orientation == Pawn.NORTH_TO_SOUTH_ORIENTATION:
+            return current_rank != Pawn.NORTH_TO_SOUTH_STARTER_RANK
+        else:
+            return current_rank != Pawn.SOUTH_TO_NORTH_STARTER_RANK
+
 
 
 
