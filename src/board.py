@@ -54,7 +54,7 @@ class Board:
         moves_to_check = piece.get_one_step_moves()
         unique_attacking_moves = piece.get_unique_attacking_moves()
         if len(unique_attacking_moves) != 0:
-            moves_to_check.union(unique_attacking_moves)
+            moves_to_check = moves_to_check.union(unique_attacking_moves)
 
         for move in moves_to_check:
             if self.is_potential_move_valid(piece, piece.current_position, move):
@@ -95,15 +95,12 @@ class Board:
 
     def display(self, positions_to_highlight = None):
         positions_to_highlight = {} if positions_to_highlight is None else positions_to_highlight
-        ranks = list(self.__rank_to_xindex_mapping.keys())
-        files = list(self.__file_to_yindex_mapping.keys())
-        if self.__flipped:
-            ranks = ranks[::-1]
-            files = files[::-1]
+        index_to_ranks_mapping = {index : rank for rank, index in self.__rank_to_xindex_mapping.items()}
+        index_to_files_mapping = {index : file for file, index in self.__file_to_yindex_mapping.items()}
 
         for rank_index, rank in enumerate(self.__grid):
             # print rank number
-            print(Fore.WHITE + ranks[rank_index] + " ", end="")
+            print(Fore.WHITE + index_to_ranks_mapping.get(rank_index) + " ", end="")
             for file_index, file in enumerate(rank):
                 position = (rank_index, file_index)
                 piece = self.__grid[rank_index][file_index]
@@ -125,8 +122,8 @@ class Board:
 
         # print files
         print("  ", end="")
-        for file in files:
-            print(" {} ".format(Fore.WHITE + file), end="")
+        for index in range(8):
+            print(" {} ".format(Fore.WHITE + index_to_files_mapping.get(index)), end="")
         print()
 
     def get_piece_on_position(self, file, rank):

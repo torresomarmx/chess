@@ -1,7 +1,7 @@
 from colorama import Fore, Back, Style
 from src.board import Board
 from src.pieces import Pawn
-from src.util.chess_constants import BLACK_COLOR
+from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR
 
 if __name__ == "__main__":
     # import os
@@ -25,8 +25,10 @@ if __name__ == "__main__":
     # print(pos)
 
     p = Pawn((1,0), BLACK_COLOR)
+    p2 = Pawn((2, 1), WHITE_COLOR)
     board = Board()
     board.add_piece_on_position(p, 1, 0)
+    board.add_piece_on_position(p2, 2, 1)
     positions = board.get_available_positions_for_piece(p)
     board.display(positions)
     board.flip_board()
