@@ -27,11 +27,11 @@ if __name__ == "__main__":
     p = Pawn((1,0), BLACK_COLOR)
     board = Board()
     board.add_piece_on_position(p, 1, 0)
-    board.display()
-    print(board.get_available_positions_for_piece(p))
+    positions = board.get_available_positions_for_piece(p)
+    board.display(positions)
     board.flip_board()
-    board.display()
-    print(board.get_available_positions_for_piece(p))
+    positions2 = board.get_available_positions_for_piece(p)
+    board.display(positions2)
     # player class
     # game class
 

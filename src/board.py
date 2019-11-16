@@ -93,7 +93,8 @@ class Board:
         self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping(self.__flipped)
         self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping(self.__flipped)
 
-    def display(self):
+    def display(self, positions_to_highlight = None):
+        positions_to_highlight = {} if positions_to_highlight is None else positions_to_highlight
         ranks = list(self.__rank_to_xindex_mapping.keys())
         files = list(self.__file_to_yindex_mapping.keys())
         if self.__flipped:
@@ -104,12 +105,21 @@ class Board:
             # print rank number
             print(Fore.WHITE + ranks[rank_index] + " ", end="")
             for file_index, file in enumerate(rank):
+                position = (rank_index, file_index)
                 piece = self.__grid[rank_index][file_index]
                 symbol = "   " if piece is None else " {} ".format(Fore.BLACK + piece.symbol)
+                back_color_white = Back.LIGHTYELLOW_EX if position in positions_to_highlight else Back.WHITE
+                back_color_black = Back.LIGHTYELLOW_EX if position in positions_to_highlight else Back.RED
                 if rank_index % 2 == 0:
-                    print(Back.WHITE + symbol, end="") if file_index % 2 == 0 else print(Back.RED + symbol, end="")
+                    if file_index % 2 == 0:
+                        print(back_color_white + symbol, end="")
+                    else:
+                        print(back_color_black + symbol, end="")
                 else:
-                    print(Back.RED + symbol, end="") if file_index % 2 == 0 else print(Back.WHITE + symbol, end="")
+                    if file_index % 2 == 0:
+                        print(back_color_black + symbol, end="")
+                    else:
+                        print(back_color_white + symbol, end="")
             # starting new rank, so reset Back
             print(Back.RESET)
 
