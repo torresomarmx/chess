@@ -10,19 +10,50 @@ class Board:
         self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
         # y axis on grid is left to right
         self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
+        # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
         self.__flipped = False
 
-    def add_piece_on_position(self, piece, x_position, y_position):
+    def add_piece_to_board(self, piece, position):
+        x_position = position[0]
+        y_position = position[1]
         self.__grid[x_position][y_position] = piece
+        piece.current_position = (x_position, y_position)
 
     def set_up_board_for_new_game(self, flip_board = False):
-        self.__grid = self.__create_grid_for_new_game()
-        # flipped means black is on bottom, white is on top
+        self.__grid = self.__create_empty_grid()
+
+        for color in (WHITE_COLOR, BLACK_COLOR):
+            pawn_rank_index = 6 if color == WHITE_COLOR else 1
+            major_pieces_rank_index = 7 if color == WHITE_COLOR else 0
+
+            # first create pawns
+            for y in range(8):
+                pawn = Pawn(color)
+                self.add_piece_to_board(pawn, (pawn_rank_index, y))
+
+            # then create major pieces
+            for y in range(8):
+                if y in Rook.STARTER_Y_INDICES:
+                    rook = Rook(color)
+                    self.add_piece_to_board(rook, (major_pieces_rank_index, y))
+                elif y in Knight.STARTER_Y_INDICES:
+                    knight = Knight(color)
+                    self.add_piece_to_board(knight, (major_pieces_rank_index, y))
+                elif y in Bishop.STARTER_Y_INDICES:
+                    bishop = Bishop(color)
+                    self.add_piece_to_board(bishop, (major_pieces_rank_index, y))
+                elif y == King.DEFAULT_STARTER_Y_INDEX:
+                    king = King(color)
+                    self.add_piece_to_board(king, (major_pieces_rank_index, y))
+                elif y == Queen.DEFAULT_STARTER_Y_INDEX:
+                    queen = Queen(color)
+                    self.add_piece_to_board(queen, (major_pieces_rank_index, y))
+
         # if flip_board rotate 180 degrees, so that black is at the bottom. Default is white on bottom, black on top
         if flip_board:
             self.flip_board()
 
-    def is_potential_move_valid(self, piece, current_position, move):
+    def is_potential_move_valid(self, piece, current_position, move, is_unique_attacking_move):
         current_x_position = current_position[0]
         current_y_position = current_position[1]
         potential_x_position = current_x_position + move[0]
@@ -41,26 +72,27 @@ class Board:
 
         piece_at_potential_position = self.__grid[potential_x_position][potential_y_position]
         # then check to see if there is a piece to take at that position
-        if piece_at_potential_position is not None:
-            return piece_at_potential_position.color != piece.color
+        if piece_at_potential_position is None:
+            return False if is_unique_attacking_move else True
         else:
-            return True
+            return piece_at_potential_position.color != piece.color
 
     def get_available_positions_for_piece(self, piece):
         available_positions = set()
         current_x_position = piece.current_position[0]
         current_y_position = piece.current_position[1]
 
-        moves_to_check = piece.get_one_step_moves()
+        moves_to_check = [(False, piece.get_one_step_moves())]
         unique_attacking_moves = piece.get_unique_attacking_moves()
         if len(unique_attacking_moves) != 0:
-            moves_to_check = moves_to_check.union(unique_attacking_moves)
+            moves_to_check.append((True, unique_attacking_moves))
 
-        for move in moves_to_check:
-            if self.is_potential_move_valid(piece, piece.current_position, move):
-                potential_x_position = current_x_position + move[0]
-                potential_y_position = current_y_position + move[1]
-                available_positions.add( (potential_x_position, potential_y_position) )
+        for are_unique_attacking_moves, moves in moves_to_check:
+            for move in moves:
+                if self.is_potential_move_valid(piece, piece.current_position, move, are_unique_attacking_moves):
+                    potential_x_position = current_x_position + move[0]
+                    potential_y_position = current_y_position + move[1]
+                    available_positions.add( (potential_x_position, potential_y_position) )
 
         # then check if piece is sliding piece
         if piece.is_sliding_piece():
@@ -131,45 +163,8 @@ class Board:
         y_index = self.__file_to_yindex_mapping[file]
         return self.__grid[x_index][y_index]
 
-    def __create_grid_for_new_game(self):
-        grid = self.__create_empty_grid()
-
-        grid[:2] = self.__create_starter_ranks(BLACK_COLOR)
-        grid[-2:] = self.__create_starter_ranks(WHITE_COLOR)
-
-        return grid
-
     def __create_empty_grid(self):
         return [[None for x in range(8)] for y in range(8)]
-
-    def __create_starter_ranks(self, color):
-        starter_ranks = [[None for x in range(8)] for y in range(2)]
-        pawn_rank_index = 0 if color == WHITE_COLOR else 1
-        major_pieces_rank_index = 1 if color == WHITE_COLOR else 0
-
-        # first create pawns
-        for y in range(8):
-            starter_ranks[pawn_rank_index][y] = Pawn((pawn_rank_index, y), color)
-
-        # then create major pieces
-        for y in range(8):
-            # rooks
-            if y in Rook.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Rook(major_pieces_rank_index, y, color)
-            # knights
-            elif y in Knight.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Knight(major_pieces_rank_index, y, color)
-            # bishops
-            elif y in Bishop.STARTER_Y_INDICES:
-                starter_ranks[major_pieces_rank_index][y] = Bishop(major_pieces_rank_index, y, color)
-            # king
-            elif y == King.DEFAULT_STARTER_Y_INDEX:
-                starter_ranks[major_pieces_rank_index][y] = King(major_pieces_rank_index, y, color)
-            # queen
-            elif y == Queen.DEFAULT_STARTER_Y_INDEX:
-                starter_ranks[major_pieces_rank_index][y] = Queen(major_pieces_rank_index, y, color)
-
-        return starter_ranks
 
     def __create_rank_to_xindex_mapping(self, flipped = False):
         # this maps a chess rank position (1, 2, 3, et..) to a X position on the 8x8 grid

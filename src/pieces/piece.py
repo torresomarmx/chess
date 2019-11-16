@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 
 class Piece(ABC):
 
-    def __init__(self, position, color, symbol, orientation):
-        self.current_position = position
+    def __init__(self, color, symbol, orientation):
         self.__color = color
         self.__symbol = symbol
         self.__orientation = orientation
+        self.current_position = None
 
     @property
     def color(self):

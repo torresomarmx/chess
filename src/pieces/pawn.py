@@ -5,8 +5,8 @@ class Pawn(Piece):
     BLACK_SYMBOL = "♟"
     WHITE_SYMBOL = "♙"
 
-    NORTH_TO_SOUTH_ORIENTATION = "N"
-    SOUTH_TO_NORTH_ORIENTATION = "S"
+    NORTH_TO_SOUTH_ORIENTATION = "N -> S"
+    SOUTH_TO_NORTH_ORIENTATION = "S -> N"
 
     NORTH_TO_SOUTH_ONE_STEP_MOVES = {(1, 0)}
     NORTH_TO_SOUTH_LEGAL_FIRST_MOVE = (2, 0)
@@ -18,10 +18,10 @@ class Pawn(Piece):
     SOUTH_TO_NORTH_UNIQUE_ATTACKING_MOVES = {(-1, 1), (-1, -1)}
     SOUTH_TO_NORTH_STARTER_RANK = 6
 
-    def __init__(self, position, color):
+    def __init__(self, color):
         symbol = Pawn.BLACK_SYMBOL if color == BLACK_COLOR else Pawn.WHITE_SYMBOL
         orientation = Pawn.NORTH_TO_SOUTH_ORIENTATION if color == BLACK_COLOR else Pawn.SOUTH_TO_NORTH_ORIENTATION
-        Piece.__init__(self, position, color, symbol, orientation)
+        Piece.__init__(self, color, symbol, orientation)
 
     @staticmethod
     def is_sliding_piece():

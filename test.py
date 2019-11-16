@@ -24,16 +24,21 @@ if __name__ == "__main__":
     # pos = board.get_piece_on_position("A", "1")
     # print(pos)
 
-    p = Pawn((1,0), BLACK_COLOR)
-    p2 = Pawn((2, 1), WHITE_COLOR)
+    # p = Pawn(BLACK_COLOR)
+    # p2 = Pawn(WHITE_COLOR)
     board = Board()
-    board.add_piece_on_position(p, 1, 0)
-    board.add_piece_on_position(p2, 2, 1)
+    board.set_up_board_for_new_game()
+    board.display()
+    p = board.get_piece_on_position("A", "2")
+    # board.add_piece_to_board(p, (1,0))
+    # board.add_piece_to_board(p2, (2, 1))
     positions = board.get_available_positions_for_piece(p)
     board.display(positions)
     board.flip_board()
-    positions2 = board.get_available_positions_for_piece(p)
-    board.display(positions2)
+    positions = board.get_available_positions_for_piece(p)
+    board.display(positions)
+    # positions2 = board.get_available_positions_for_piece(p)
+    # board.display(positions2)
     # player class
     # game class
 
