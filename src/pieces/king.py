@@ -6,6 +6,9 @@ class King(Piece):
     WHITE_SYMBOL = "♔"
     DEFAULT_STARTER_Y_INDEX = 4
 
+    ONE_STEP_MOVES = {(-1, 1), (-1, -1), (1, 1), (1, -1),
+                      (-1, 0), (1, 0), (0, -1), (0, 1)}
+
     def __init__(self, color):
         symbol = King.BLACK_SYMBOL if color == BLACK_COLOR else King.WHITE_SYMBOL
         Piece.__init__(self, color, symbol, None)
@@ -15,10 +18,10 @@ class King(Piece):
         return False
 
     def get_unique_attacking_moves(self):
-        return {}
+        return None
 
     def get_one_step_moves(self):
-        return {}
+        return King.ONE_STEP_MOVES
 
     def switch_orientation(self):
         pass
