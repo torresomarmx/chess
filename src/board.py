@@ -53,9 +53,9 @@ class Board:
         if flip_board:
             self.flip_board()
 
-    def is_potential_move_valid(self, piece, current_position, move, is_unique_attacking_move):
-        current_x_position = current_position[0]
-        current_y_position = current_position[1]
+    def is_potential_move_valid(self, piece, move, is_unique_attacking_move, current_position = None):
+        current_x_position = piece.current_position[0] if current_position is None else current_position[0]
+        current_y_position = piece.current_position[1] if current_position is None else current_position[1]
         potential_x_position = current_x_position + move[0]
         potential_y_position = current_y_position + move[1]
 
@@ -78,31 +78,35 @@ class Board:
             return piece_at_potential_position.color != piece.color
 
     def get_available_positions_for_piece(self, piece):
+        # TODO: check if piece has a current position. This is only the case if piece is on board
         available_positions = set()
         current_x_position = piece.current_position[0]
         current_y_position = piece.current_position[1]
 
         moves_to_check = [(False, piece.get_one_step_moves())]
         unique_attacking_moves = piece.get_unique_attacking_moves()
-        if len(unique_attacking_moves) != 0:
+        if unique_attacking_moves is not None:
             moves_to_check.append((True, unique_attacking_moves))
 
         for are_unique_attacking_moves, moves in moves_to_check:
             for move in moves:
-                if self.is_potential_move_valid(piece, piece.current_position, move, are_unique_attacking_moves):
+                if self.is_potential_move_valid(piece, move, are_unique_attacking_moves):
                     potential_x_position = current_x_position + move[0]
                     potential_y_position = current_y_position + move[1]
                     available_positions.add( (potential_x_position, potential_y_position) )
 
         # then check if piece is sliding piece
         if piece.is_sliding_piece():
-            for move in moves_to_check:
-                while self.is_potential_move_valid(piece, (current_x_position, current_y_position), move):
-                    potential_x_position = current_x_position + move[0]
-                    potential_y_position = current_y_position + move[1]
-                    available_positions.add((potential_x_position, potential_y_position))
-                    current_x_position = potential_x_position
-                    current_y_position = potential_y_position
+            for are_unique_attacking_moves, moves in moves_to_check:
+                for move in moves:
+                    x_pos = piece.current_position[0]
+                    y_pos = piece.current_position[1]
+                    while self.is_potential_move_valid(piece, move, are_unique_attacking_moves, (x_pos, y_pos)):
+                        potential_x_position = x_pos + move[0]
+                        potential_y_position = y_pos + move[1]
+                        available_positions.add((potential_x_position, potential_y_position))
+                        x_pos = potential_x_position
+                        y_pos = potential_y_position
 
         return available_positions
 
