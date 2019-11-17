@@ -13,6 +13,72 @@ class Board:
         # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
         self.__flipped = False
 
+    def is_color_in_check(self, color):
+        # get available positions for all pieces of opposite color. These will the attacked positions
+        # get the position of the king for color in question
+        # check to see if king position is in attacked positions
+        pass
+
+    def get_king(self, color):
+        for x in range(8):
+            for y in range(8):
+                piece = self.__grid[x][y]
+                if isinstance(piece, King) and piece.color == color:
+                    return piece
+
+        return None
+
+    def is_color_in_checkmate(self, color):
+        king = self.get_king(color)
+        available_moves_for_king = self.get_available_positions_for_piece(king, False)
+
+        if len(available_moves_for_king) == 0:
+            # begin simulating moves
+            simulation_board = Board()
+            pieces_to_simulate_moves = []
+            for x in range(8):
+                for y in range(8):
+                    piece = self.__grid[x][y]
+                    if piece is not None:
+                        piece_color = piece.color
+                        simulation_piece = None
+                        if isinstance(piece, Pawn):
+                            simulation_piece = Pawn(piece_color)
+                        elif isinstance(piece, Bishop):
+                            simulation_piece = Bishop([piece_color])
+                        elif isinstance(piece, King):
+                            simulation_piece = King(piece_color)
+                        elif isinstance(piece, Knight):
+                            simulation_piece = Knight(piece_color)
+                        elif isinstance(piece, Queen):
+                            simulation_piece = Queen(piece_color)
+                        elif isinstance(piece, Rook):
+                            simulation_piece = Rook(piece_color)
+                        else:
+                            continue
+                        simulation_board.add_piece_to_board(simulation_piece, piece.current_position)
+                        if simulation_piece.color == color: pieces_to_simulate_moves.append(simulation_piece)
+
+            for piece in pieces_to_simulate_moves:
+                # get all the available positions
+                    # store current position
+                    # temporarily move piece to available position
+                    # see if king is still in check
+
+        else:
+            return False
+
+    def get_attacking_positions(self, color):
+        attacking_positions = set()
+
+        for x in range(8):
+            for y in range(8):
+                piece = self.__grid[x][y]
+                if piece is not None and piece.color == color:
+                    attacking_positions.add(self.get_available_positions_for_piece(piece))
+
+        return attacking_positions
+
     def add_piece_to_board(self, piece, position):
         x_position = position[0]
         y_position = position[1]
@@ -77,11 +143,17 @@ class Board:
         else:
             return piece_at_potential_position.color != piece.color
 
-    def get_available_positions_for_piece(self, piece):
+    def get_available_positions_for_piece(self, piece, skip_king_safety_check = True):
         # TODO: check if piece has a current position. This is only the case if piece is on board
         available_positions = set()
+        attacked_positions = set()
         current_x_position = piece.current_position[0]
         current_y_position = piece.current_position[1]
+
+        # if piece is King, we have to make sure none of the available_positions are under attack
+        if isinstance(piece, King) and not skip_king_safety_check:
+            opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
+            attacked_positions = self.get_attacking_positions(opposite_color)
 
         moves_to_check = [(False, piece.get_one_step_moves())]
         unique_attacking_moves = piece.get_unique_attacking_moves()
@@ -108,7 +180,7 @@ class Board:
                         x_pos = potential_x_position
                         y_pos = potential_y_position
 
-        return available_positions
+        return available_positions.difference(attacked_positions)
 
     def flip_board(self):
         new_board = [[] for y in range(8)]
