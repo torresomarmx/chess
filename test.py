@@ -1,6 +1,6 @@
 from colorama import Fore, Back, Style
 from src.board import Board
-from src.pieces import Pawn, Bishop, King, Queen
+from src.pieces import Pawn, Bishop, King, Queen, Rook
 from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR
 
 if __name__ == "__main__":
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # pos = board.get_piece_on_position("A", "1")
     # print(pos)
 
-    p = Queen(BLACK_COLOR)
+    p = Rook(BLACK_COLOR)
     # p2 = Pawn(BLACK_COLOR)
     board = Board()
     # board.set_up_board_for_new_game()

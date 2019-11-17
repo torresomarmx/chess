@@ -6,19 +6,21 @@ class Rook(Piece):
     WHITE_SYMBOL = "♖"
     STARTER_Y_INDICES = (0, 7)
 
+    ONE_STEP_MOVES = {(-1, 0), (1, 0), (0, 1), (0, -1)}
+
     def __init__(self, color):
         symbol = Rook.BLACK_SYMBOL if color == BLACK_COLOR else Rook.WHITE_SYMBOL
         Piece.__init__(self, color, symbol, None)
 
     @staticmethod
     def is_sliding_piece():
-        return False
+        return True
 
     def get_unique_attacking_moves(self):
-        return {}
+        return None
 
     def get_one_step_moves(self):
-        return {}
+        return Rook.ONE_STEP_MOVES
 
     def switch_orientation(self):
         pass
