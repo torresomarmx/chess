@@ -13,20 +13,64 @@ class Board:
         # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
         self.__flipped = False
 
-    def is_color_in_check(self, color):
-        # get available positions for all pieces of opposite color. These will the attacked positions
-        # get the position of the king for color in question
-        # check to see if king position is in attacked positions
-        pass
+    def move_piece_to_new_position(self, piece, new_position):
+        current_x_position_for_piece, current_y_position_for_piece = piece.current_position
+        self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
+        self.add_piece_to_board(piece, new_position)
 
     def get_king(self, color):
         for x in range(8):
             for y in range(8):
-                piece = self.__grid[x][y]
+                piece = self.get_piece_on_grid_position((x, y))
                 if isinstance(piece, King) and piece.color == color:
                     return piece
 
         return None
+
+    def is_move_defending_position(self, piece, move, current_position = None):
+        if not self.__is_potential_move_valid(piece, move, current_position):
+            return False
+
+        current_x_position, current_y_position = piece.current_position
+        potential_x_position, potential_y_position = (current_x_position + move[0], current_y_position + move[1])
+
+        piece_at_potential_position = self.get_piece_on_grid_position((potential_x_position, potential_y_position))
+        # then check if position is being defended
+        if piece_at_potential_position is None:
+            return True
+        else:
+            return piece_at_potential_position.color == piece.color
+
+    def get_defending_positions_for_piece(self, piece):
+        defending_positions = set()
+        current_x_position, current_y_position = piece.current_position
+        moves_to_check = piece.get_one_step_moves()
+
+        for move in moves_to_check:
+            if self.is_move_defending_position(piece, move):
+                defending_x_position = current_x_position + move[0]
+                defending_y_position = current_y_position + move[1]
+                defending_positions.add((defending_x_position, defending_y_position))
+
+        if piece.is_sliding_piece():
+            for move in moves_to_check:
+                x_pos, y_pos = piece.current_position
+                while self.is_move_defending_position(piece, move, (x_pos, y_pos)):
+                    x_pos += move[0]
+                    y_pos += move[1]
+                    defending_positions.add((x_pos, y_pos))
+
+        return defending_positions
+
+    def get_defending_positions(self, color):
+        defending_positions = set()
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_piece_on_grid_position((x, y))
+                if piece is not None and piece.color == color:
+                    defending_positions = defending_positions.union(self.get_defending_positions_for_piece(piece))
+
+        return defending_positions
 
     def is_color_in_checkmate(self, color):
         king = self.get_king(color)
@@ -34,37 +78,31 @@ class Board:
 
         if len(available_moves_for_king) == 0:
             # begin simulating moves
-            simulation_board = Board()
-            pieces_to_simulate_moves = []
+            opposite_color = WHITE_COLOR if color == BLACK_COLOR else BLACK_COLOR
+
             for x in range(8):
                 for y in range(8):
-                    piece = self.__grid[x][y]
-                    if piece is not None:
-                        piece_color = piece.color
-                        simulation_piece = None
-                        if isinstance(piece, Pawn):
-                            simulation_piece = Pawn(piece_color)
-                        elif isinstance(piece, Bishop):
-                            simulation_piece = Bishop([piece_color])
-                        elif isinstance(piece, King):
-                            simulation_piece = King(piece_color)
-                        elif isinstance(piece, Knight):
-                            simulation_piece = Knight(piece_color)
-                        elif isinstance(piece, Queen):
-                            simulation_piece = Queen(piece_color)
-                        elif isinstance(piece, Rook):
-                            simulation_piece = Rook(piece_color)
-                        else:
-                            continue
-                        simulation_board.add_piece_to_board(simulation_piece, piece.current_position)
-                        if simulation_piece.color == color: pieces_to_simulate_moves.append(simulation_piece)
+                    piece = self.get_piece_on_grid_position((x, y))
+                    if (piece is not None) and (not isinstance(piece, King)) and (piece.color == color):
+                        piece_original_position = piece.current_position
+                        available_positions_for_piece = self.get_available_positions_for_piece(piece)
+                        for available_position in available_positions_for_piece:
+                            # temporarily move piece to available position
+                            piece_at_available_position = self.get_piece_on_grid_position(available_position)
+                            self.move_piece_to_new_position(piece, available_position)
 
-            for piece in pieces_to_simulate_moves:
-                # get all the available positions
-                    # store current position
-                    # temporarily move piece to available position
-                    # see if king is still in check
+                            new_attacked_positions = self.get_attacking_positions(opposite_color)
+                            is_in_check = king.current_position in new_attacked_positions
 
+                            # move everything back
+                            self.move_piece_to_new_position(piece, piece_original_position)
+                            self.add_piece_to_board(piece_at_available_position, available_position)
+
+                            if is_in_check:
+                                continue
+                            else:
+                                return False
+            return True
         else:
             return False
 
@@ -73,17 +111,16 @@ class Board:
 
         for x in range(8):
             for y in range(8):
-                piece = self.__grid[x][y]
+                piece = self.get_piece_on_grid_position((x, y))
                 if piece is not None and piece.color == color:
-                    attacking_positions.add(self.get_available_positions_for_piece(piece))
+                    attacking_positions.union(self.get_available_positions_for_piece(piece))
 
         return attacking_positions
 
     def add_piece_to_board(self, piece, position):
-        x_position = position[0]
-        y_position = position[1]
+        x_position, y_position = position
         self.__grid[x_position][y_position] = piece
-        piece.current_position = (x_position, y_position)
+        piece.current_position = position
 
     def set_up_board_for_new_game(self, flip_board = False):
         self.__grid = self.__create_empty_grid()
@@ -119,24 +156,13 @@ class Board:
         if flip_board:
             self.flip_board()
 
-    def is_potential_move_valid(self, piece, move, is_unique_attacking_move, current_position = None):
-        current_x_position = piece.current_position[0] if current_position is None else current_position[0]
-        current_y_position = piece.current_position[1] if current_position is None else current_position[1]
-        potential_x_position = current_x_position + move[0]
-        potential_y_position = current_y_position + move[1]
-
-        # first check to see that current_position is valid (not stepping on any other piece)
-        piece_at_current_position = self.__grid[current_x_position][current_y_position]
-        if piece_at_current_position is not None and piece_at_current_position is not piece:
+    def is_potential_move_available_for_attack(self, piece, move, is_unique_attacking_move, current_position = None):
+        if not self.__is_potential_move_valid(piece, move, current_position):
             return False
 
-        # then check if potential position is out of bounds
-        if (potential_x_position > 7) or (potential_y_position > 7):
-            return False
-        if (potential_x_position < 0) or (potential_y_position < 0):
-            return False
-
-        piece_at_potential_position = self.__grid[potential_x_position][potential_y_position]
+        current_x_position, current_y_position = piece.current_position
+        potential_x_position, potential_y_position = (current_x_position + move[0], current_y_position + move[1])
+        piece_at_potential_position = self.get_piece_on_grid_position((potential_x_position, potential_y_position))
         # then check to see if there is a piece to take at that position
         if piece_at_potential_position is None:
             return False if is_unique_attacking_move else True
@@ -147,13 +173,13 @@ class Board:
         # TODO: check if piece has a current position. This is only the case if piece is on board
         available_positions = set()
         attacked_positions = set()
-        current_x_position = piece.current_position[0]
-        current_y_position = piece.current_position[1]
+        current_x_position, current_y_position = piece.current_position
 
-        # if piece is King, we have to make sure none of the available_positions are under attack
+        # if piece is King, we have to make sure none of the available_positions are under attack or being defended
         if isinstance(piece, King) and not skip_king_safety_check:
             opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
             attacked_positions = self.get_attacking_positions(opposite_color)
+            attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
 
         moves_to_check = [(False, piece.get_one_step_moves())]
         unique_attacking_moves = piece.get_unique_attacking_moves()
@@ -162,23 +188,20 @@ class Board:
 
         for are_unique_attacking_moves, moves in moves_to_check:
             for move in moves:
-                if self.is_potential_move_valid(piece, move, are_unique_attacking_moves):
+                if self.is_potential_move_available_for_attack(piece, move, are_unique_attacking_moves):
                     potential_x_position = current_x_position + move[0]
                     potential_y_position = current_y_position + move[1]
-                    available_positions.add( (potential_x_position, potential_y_position) )
+                    available_positions.add((potential_x_position, potential_y_position))
 
         # then check if piece is sliding piece
         if piece.is_sliding_piece():
             for are_unique_attacking_moves, moves in moves_to_check:
                 for move in moves:
-                    x_pos = piece.current_position[0]
-                    y_pos = piece.current_position[1]
-                    while self.is_potential_move_valid(piece, move, are_unique_attacking_moves, (x_pos, y_pos)):
-                        potential_x_position = x_pos + move[0]
-                        potential_y_position = y_pos + move[1]
-                        available_positions.add((potential_x_position, potential_y_position))
-                        x_pos = potential_x_position
-                        y_pos = potential_y_position
+                    x_pos, y_pos = piece.current_position
+                    while self.is_potential_move_available_for_attack(piece, move, are_unique_attacking_moves, (x_pos, y_pos)):
+                        x_pos += move[0]
+                        y_pos += move[1]
+                        available_positions.add((x_pos, y_pos))
 
         return available_positions.difference(attacked_positions)
 
@@ -234,9 +257,14 @@ class Board:
             print(" {} ".format(Fore.WHITE + index_to_files_mapping.get(index)), end="")
         print()
 
-    def get_piece_on_position(self, file, rank):
+    def get_piece_on_notation_position(self, position):
+        file, rank = position
         x_index = self.__rank_to_xindex_mapping[rank]
         y_index = self.__file_to_yindex_mapping[file]
+        return self.__grid[x_index][y_index]
+
+    def get_piece_on_grid_position(self, position):
+        x_index, y_index = position
         return self.__grid[x_index][y_index]
 
     def __create_empty_grid(self):
@@ -259,6 +287,31 @@ class Board:
             return {file : index for index, file in enumerate(files[::-1])}
 
         return {file: index for index, file in enumerate(files)}
+
+    def __is_position_on_board(self, position):
+        x_position, y_position = position
+
+        if (x_position > 7) or (y_position > 7):
+            return False
+        if (x_position < 0) or (y_position < 0):
+            return False
+
+        return True
+
+    def __is_potential_move_valid(self, piece, move, current_position = None):
+        current_x_position, current_y_position = piece.current_position if current_position is None else current_position
+        potential_x_position, potential_y_position = (current_x_position + move[0], current_y_position + move[1])
+
+        # first check to see that current_position is valid (not stepping on any other piece)
+        piece_at_current_position = self.get_piece_on_grid_position((current_y_position, current_y_position))
+        if piece_at_current_position is not None and piece_at_current_position is not piece:
+            return False
+
+        # then check if potential position is out of bounds
+        if not self.__is_position_on_board((potential_x_position, potential_y_position)):
+            return False
+
+        return True
 
 
 
