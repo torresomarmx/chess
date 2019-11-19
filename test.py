@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # positions = board.get_available_positions_for_piece(p)
     positions = board.get_defending_positions(WHITE_COLOR)
     board.display(positions)
-    print(board.is_color_in_checkmate(BLACK_COLOR))
+    print(board.is_in_checkmate(BLACK_COLOR))
     # board.flip_board()
     # positions = board.get_available_positions_for_piece(p)
     # board.display(positions)

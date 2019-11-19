@@ -27,7 +27,7 @@ class Board:
 
         return None
 
-    def is_move_defending_position(self, piece, move, current_position = None):
+    def is_move_defending_a_position(self, piece, move, current_position = None):
         if not self.__is_potential_move_valid(piece, move, current_position):
             return False
 
@@ -47,7 +47,7 @@ class Board:
         moves_to_check = piece.get_one_step_moves()
 
         for move in moves_to_check:
-            if self.is_move_defending_position(piece, move):
+            if self.is_move_defending_a_position(piece, move):
                 defending_x_position = current_x_position + move[0]
                 defending_y_position = current_y_position + move[1]
                 defending_positions.add((defending_x_position, defending_y_position))
@@ -55,7 +55,7 @@ class Board:
         if piece.is_sliding_piece():
             for move in moves_to_check:
                 x_pos, y_pos = piece.current_position
-                while self.is_move_defending_position(piece, move, (x_pos, y_pos)):
+                while self.is_move_defending_a_position(piece, move, (x_pos, y_pos)):
                     x_pos += move[0]
                     y_pos += move[1]
                     defending_positions.add((x_pos, y_pos))
@@ -72,7 +72,7 @@ class Board:
 
         return defending_positions
 
-    def is_color_in_checkmate(self, color):
+    def is_in_checkmate(self, color):
         king = self.get_king(color)
         available_moves_for_king = self.get_available_positions_for_piece(king, False)
 
