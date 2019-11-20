@@ -33,12 +33,12 @@ class Board:
     def get_attacking_positions_for_piece(self, piece):
         return self.__get_positions_for_piece(piece, "ATTACKING")
 
-    def get_available_positions_for_piece(self, piece, skip_king_safety_check = False):
+    def get_available_positions_for_piece(self, piece):
         available_positions = self.__get_positions_for_piece(piece, "AVAILABLE")
         attacked_positions = set()
 
         # if piece is King, we have to make sure none of the available_positions are under attack or being defended
-        if isinstance(piece, King) and not skip_king_safety_check:
+        if isinstance(piece, King):
             opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
             attacked_positions = self.get_attacking_positions(opposite_color)
             attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
@@ -65,9 +65,10 @@ class Board:
             for x in range(8):
                 for y in range(8):
                     piece = self.get_piece_on_grid_position((x, y))
+                    # we won't look at King again
                     if (piece is not None) and (not isinstance(piece, King)) and (piece.color == color):
                         piece_original_position = piece.current_position
-                        available_positions_for_piece = self.get_available_positions_for_piece(piece, True)
+                        available_positions_for_piece = self.get_available_positions_for_piece(piece)
                         for available_position in available_positions_for_piece:
                             # temporarily move piece to available position
                             piece_at_available_position = self.get_piece_on_grid_position(available_position)
@@ -78,7 +79,8 @@ class Board:
 
                             # move everything back
                             self.move_piece_to_new_position(piece, piece_original_position)
-                            self.add_piece_to_board(piece_at_available_position, available_position)
+                            if piece_at_available_position is not None:
+                                self.add_piece_to_board(piece_at_available_position, available_position)
 
                             if is_in_check:
                                 continue
@@ -236,7 +238,10 @@ class Board:
         piece_at_potential_position = self.get_piece_on_grid_position((potential_x_position, potential_y_position))
 
         if piece_at_potential_position is None:
-            return False if is_conditional_attacking_move else True
+            if move_type == "DEFENDING" or move_type == "ATTACKING":
+                return True
+            elif move_type == "AVAILABLE":
+                return False if is_conditional_attacking_move else True
         else:
             if move_type == "DEFENDING":
                 return piece_at_potential_position.color == piece.color
