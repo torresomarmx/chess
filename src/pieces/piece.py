@@ -38,13 +38,18 @@ class Piece(ABC):
         pass
 
     @abstractmethod
-    def get_unique_attacking_moves(self):
+    def get_attacking_moves(self):
         pass
 
     @abstractmethod
-    def get_one_step_moves(self):
+    def get_conditional_attacking_moves(self):
+        pass
+
+    @abstractmethod
+    def get_positional_moves(self):
         pass
 
     @abstractmethod
     def switch_orientation(self):
         pass
+

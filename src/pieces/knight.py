@@ -6,8 +6,8 @@ class Knight(Piece):
     WHITE_SYMBOL = "♘"
     STARTER_Y_INDICES = (1, 6)
 
-    ONE_STEP_MOVES = {(-2, 1), (-2, -1), (2, 1), (2, -1),
-                      (-1, -2), (1, -2), (-1, 2), (1, 2)}
+    POSITIONAL_MOVES = {(-2, 1), (-2, -1), (2, 1), (2, -1),
+                        (-1, -2), (1, -2), (-1, 2), (1, 2)}
 
     def __init__(self, color):
         symbol = Knight.BLACK_SYMBOL if color == BLACK_COLOR else Knight.WHITE_SYMBOL
@@ -17,11 +17,14 @@ class Knight(Piece):
     def is_sliding_piece():
         return False
 
-    def get_unique_attacking_moves(self):
+    def get_attacking_moves(self):
+        return Knight.POSITIONAL_MOVES
+
+    def get_conditional_attacking_moves(self):
         return None
 
-    def get_one_step_moves(self):
-        return Knight.ONE_STEP_MOVES
+    def get_positional_moves(self):
+        return Knight.POSITIONAL_MOVES
 
     def switch_orientation(self):
         pass

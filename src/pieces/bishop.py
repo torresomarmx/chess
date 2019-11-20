@@ -6,7 +6,7 @@ class Bishop(Piece):
     WHITE_SYMBOL = "♗"
     STARTER_Y_INDICES = (2, 5)
 
-    ONE_STEP_MOVES = {(-1, 1), (-1, -1), (1, 1), (1, -1)}
+    POSITIONAL_MOVES = {(-1, 1), (-1, -1), (1, 1), (1, -1)}
 
     def __init__(self, color):
         symbol = Bishop.BLACK_SYMBOL if color == BLACK_COLOR else Bishop.WHITE_SYMBOL
@@ -16,11 +16,14 @@ class Bishop(Piece):
     def is_sliding_piece():
         return True
 
-    def get_unique_attacking_moves(self):
+    def get_attacking_moves(self):
+        return Bishop.POSITIONAL_MOVES
+
+    def get_conditional_attacking_moves(self):
         return None
 
-    def get_one_step_moves(self):
-        return Bishop.ONE_STEP_MOVES
+    def get_positional_moves(self):
+        return Bishop.POSITIONAL_MOVES
 
     def switch_orientation(self):
         pass
