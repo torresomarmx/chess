@@ -1,4 +1,4 @@
-from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR
+from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
 
@@ -28,31 +28,22 @@ class Board:
         return None
 
     def get_defending_positions_for_piece(self, piece):
-        return self.__get_positions_for_piece(piece, "DEFENDING")
+        return self.__get_positions_for_piece(piece, DEFENDING_POSITION)
 
     def get_attacking_positions_for_piece(self, piece):
-        return self.__get_positions_for_piece(piece, "ATTACKING")
+        return self.__get_positions_for_piece(piece, ATTACKING_POSITION)
 
     def get_available_positions_for_piece(self, piece):
-        available_positions = self.__get_positions_for_piece(piece, "AVAILABLE")
-        attacked_positions = set()
-
-        # if piece is King, we have to make sure none of the available_positions are under attack or being defended
-        if isinstance(piece, King):
-            opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
-            attacked_positions = self.get_attacking_positions(opposite_color)
-            attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
-
-        return available_positions.difference(attacked_positions)
+        return self.__get_positions_for_piece(piece, AVAILABLE_POSITION)
 
     def get_defending_positions(self, color):
-        return self.__get_positions_for_color(color, "DEFENDING")
+        return self.__get_positions_for_color(color, DEFENDING_POSITION)
 
     def get_attacking_positions(self, color):
-        return self.__get_positions_for_color(color, "ATTACKING")
+        return self.__get_positions_for_color(color, ATTACKING_POSITION)
 
     def get_available_positions(self, color):
-        return self.__get_positions_for_color(color, "AVAILABLE")
+        return self.__get_positions_for_color(color, AVAILABLE_POSITION)
 
     def is_in_checkmate(self, color):
         king = self.get_king(color)
@@ -161,7 +152,7 @@ class Board:
                 piece = self.__grid[rank_index][file_index]
                 symbol = "   " if piece is None else " {} ".format(Fore.BLACK + piece.symbol)
                 back_color_white = Back.LIGHTYELLOW_EX if position in positions_to_highlight else Back.WHITE
-                back_color_black = Back.LIGHTYELLOW_EX if position in positions_to_highlight else Back.RED
+                back_color_black = Back.LIGHTYELLOW_EX if position in positions_to_highlight else Back.MAGENTA
                 if rank_index % 2 == 0:
                     if file_index % 2 == 0:
                         print(back_color_white + symbol, end="")
@@ -238,14 +229,14 @@ class Board:
         piece_at_potential_position = self.get_piece_on_grid_position((potential_x_position, potential_y_position))
 
         if piece_at_potential_position is None:
-            if move_type == "DEFENDING" or move_type == "ATTACKING":
+            if move_type == DEFENDING_POSITION or move_type == ATTACKING_POSITION:
                 return True
-            elif move_type == "AVAILABLE":
+            elif move_type == AVAILABLE_POSITION:
                 return False if is_conditional_attacking_move else True
         else:
-            if move_type == "DEFENDING":
+            if move_type == DEFENDING_POSITION:
                 return piece_at_potential_position.color == piece.color
-            elif move_type == "AVAILABLE" or move_type == "ATTACKING":
+            elif move_type == AVAILABLE_POSITION or move_type == ATTACKING_POSITION:
                 return piece_at_potential_position.color != piece.color
 
     def __get_positions_for_piece(self, piece, position_type):
@@ -255,13 +246,20 @@ class Board:
         conditional_attacking_moves = piece.get_conditional_attacking_moves()
         move_type = position_type
 
+        # if piece is King, we have to make sure none of the positions it can take are under attack or being defended
+        attacked_positions = set()
+        if isinstance(piece, King):
+            opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
+            attacked_positions = self.get_attacking_positions(opposite_color)
+            attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
+
         if conditional_attacking_moves is not None:
             moves_to_check.append((True, conditional_attacking_moves))
 
-        if position_type == "DEFENDING" or position_type == "ATTACKING":
+        if position_type == DEFENDING_POSITION or position_type == ATTACKING_POSITION:
             moves = piece.get_attacking_moves()
             if moves is not None: moves_to_check.append( (False, moves) )
-        elif position_type == "AVAILABLE":
+        elif position_type == AVAILABLE_POSITION:
             moves = piece.get_positional_moves()
             if moves is not None: moves_to_check.append( (False, moves) )
 
@@ -284,7 +282,7 @@ class Board:
                         y_pos += move[1]
                         positions.add((x_pos, y_pos))
 
-        return positions
+        return positions.difference(attacked_positions)
 
     def __get_positions_for_color(self, color, position_type):
         positions = set()
@@ -292,10 +290,7 @@ class Board:
             for y in range(8):
                 piece = self.get_piece_on_grid_position((x, y))
                 if piece is not None and piece.color == color:
-                    if position_type == "AVAILABLE":
-                        positions = positions.union(self.get_available_positions_for_piece(piece))
-                    else:
-                        positions = positions.union(self.__get_positions_for_piece(piece, position_type))
+                    positions = positions.union(self.__get_positions_for_piece(piece, position_type))
 
         return positions
 
