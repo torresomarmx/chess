@@ -1,4 +1,4 @@
-from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION, PAWN_SIGNATURE
+from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION, PAWN_SIGNATURE, KING_SIGNATURE
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
 from src.util.special_positions_calculator import SpecialPositionsCalculator
@@ -55,44 +55,14 @@ class Board:
     def get_attacking_positions(self, color):
         return self.__get_positions_for_color(color, ATTACKING_POSITION)
 
-    def get_available_positions(self, color):
-        return self.__get_positions_for_color(color, AVAILABLE_POSITION)
+    def get_available_positions(self, color, is_in_check):
+        if is_in_check:
+            return self.__get_in_check_available_positions(color)
+        else:
+            return self.__get_positions_for_color(color, AVAILABLE_POSITION)
 
     def is_in_checkmate(self, color):
-        king = self.__get_king(color)
-        available_moves_for_king = self.get_available_positions_for_piece(king)
-
-        if len(available_moves_for_king) == 0:
-            # begin simulating moves
-            opposite_color = WHITE_COLOR if color == BLACK_COLOR else BLACK_COLOR
-
-            for x in range(8):
-                for y in range(8):
-                    piece = self.get_piece_on_grid_position((x, y))
-                    # we won't look at King again
-                    if (piece is not None) and (not isinstance(piece, King)) and (piece.color == color):
-                        piece_original_position = piece.current_position
-                        available_positions_for_piece = self.get_available_positions_for_piece(piece)
-                        for available_position in available_positions_for_piece:
-                            # temporarily move piece to available position
-                            piece_at_available_position = self.get_piece_on_grid_position(available_position)
-                            self.__move_piece_to_new_position(piece, available_position, False)
-
-                            new_attacked_positions = self.get_attacking_positions(opposite_color)
-                            is_in_check = king.current_position in new_attacked_positions
-
-                            # move everything back
-                            self.__move_piece_to_new_position(piece, piece_original_position, False)
-                            if piece_at_available_position is not None:
-                                self.add_piece_to_board(piece_at_available_position, available_position)
-
-                            if is_in_check:
-                                continue
-                            else:
-                                return False
-            return True
-        else:
-            return False
+        return len(self.__get_in_check_available_positions(color)) == 0
 
     def add_piece_to_board(self, piece, position):
         x_position, y_position = position
@@ -331,6 +301,44 @@ class Board:
                     return piece
 
         return None
+
+    def __get_in_check_available_positions(self, color):
+        king = self.__get_king(color)
+        available_positions_for_king = self.get_available_positions_for_piece(king)
+        in_check_available_positions = set()
+
+        if len(available_positions_for_king) == 0:
+            # begin simulating moves
+            opposite_color = WHITE_COLOR if color == BLACK_COLOR else BLACK_COLOR
+
+            for x in range(8):
+                for y in range(8):
+                    piece = self.get_piece_on_grid_position((x, y))
+                    # we won't look at King again
+                    if (piece is not None) and (piece.get_signature != KING_SIGNATURE) and (piece.color == color):
+                        piece_original_position = piece.current_position
+                        available_positions_for_piece = self.get_available_positions_for_piece(piece)
+                        for available_position in available_positions_for_piece:
+                            # temporarily move piece to available position
+                            piece_at_available_position = self.get_piece_on_grid_position(available_position)
+                            self.__move_piece_to_new_position(piece, available_position, False)
+
+                            new_attacked_positions = self.get_attacking_positions(opposite_color)
+                            is_in_check = king.current_position in new_attacked_positions
+
+                            # move everything back
+                            self.__move_piece_to_new_position(piece, piece_original_position, False)
+                            if piece_at_available_position is not None:
+                                self.add_piece_to_board(piece_at_available_position, available_position)
+
+                            if is_in_check:
+                                continue
+                            else:
+                                in_check_available_positions.add(available_position)
+
+            return in_check_available_positions
+        else:
+            return available_positions_for_king
 
 
 
