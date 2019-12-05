@@ -1,4 +1,4 @@
-from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION
+from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION, PAWN_SIGNATURE
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
 from src.util.special_positions_calculator import SpecialPositionsCalculator
@@ -27,12 +27,18 @@ class Board:
         return copy.deepcopy(self.__grid)
 
     def move_piece_to_new_position(self, piece, new_position, is_permanent = False):
-        current_x_position_for_piece, current_y_position_for_piece = piece.current_position
-        self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
-        if is_permanent:
-            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
-            self.__moves_tracker.add_move(new_move, piece.color)
-        self.add_piece_to_board(piece, new_position)
+        valid_positions = self.get_available_positions_for_piece(piece)
+        if new_position in valid_positions:
+            if piece.get_signature() == PAWN_SIGNATURE:
+                en_passant_position = SpecialPositionsCalculator.get_en_passant_position(piece, self)
+                if new_position == en_passant_position:
+                    position_of_pawn_to_take = (piece.current_position[0], en_passant_position[1])
+                    self.__move_piece_to_new_position(piece, new_position, is_permanent, position_of_pawn_to_take)
+                else:
+                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
+            else:
+                self.__move_piece_to_new_position(piece, new_position, is_permanent)
+
 
     def get_defending_positions_for_piece(self, piece):
         return self.__get_positions_for_piece(piece, DEFENDING_POSITION)
@@ -70,13 +76,13 @@ class Board:
                         for available_position in available_positions_for_piece:
                             # temporarily move piece to available position
                             piece_at_available_position = self.get_piece_on_grid_position(available_position)
-                            self.move_piece_to_new_position(piece, available_position)
+                            self.__move_piece_to_new_position(piece, available_position, False)
 
                             new_attacked_positions = self.get_attacking_positions(opposite_color)
                             is_in_check = king.current_position in new_attacked_positions
 
                             # move everything back
-                            self.move_piece_to_new_position(piece, piece_original_position)
+                            self.__move_piece_to_new_position(piece, piece_original_position, False)
                             if piece_at_available_position is not None:
                                 self.add_piece_to_board(piece_at_available_position, available_position)
 
@@ -188,6 +194,18 @@ class Board:
     def get_piece_on_grid_position(self, position):
         x_index, y_index = position
         return self.__grid[x_index][y_index]
+
+    def __move_piece_to_new_position(self, piece, new_position, is_permanent, position_of_piece_to_take = None):
+        current_x_position_for_piece, current_y_position_for_piece = piece.current_position
+        self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
+        if is_permanent:
+            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
+            self.__moves_tracker.add_move(new_move, piece.color)
+
+        self.add_piece_to_board(piece, new_position)
+        if position_of_piece_to_take is not None:
+            self.__grid[position_of_piece_to_take[0]][position_of_piece_to_take[1]] = None
+
 
     def __create_empty_grid(self):
         return [[None for x in range(8)] for y in range(8)]
