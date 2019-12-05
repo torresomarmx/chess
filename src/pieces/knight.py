@@ -1,7 +1,9 @@
-from src.util.chess_constants import BLACK_COLOR
+from src.util.chess_constants import BLACK_COLOR, KNIGHT_SIGNATURE
 from .piece import Piece
 
 class Knight(Piece):
+    SIGNATURE = KNIGHT_SIGNATURE
+
     BLACK_SYMBOL = "♞"
     WHITE_SYMBOL = "♘"
     STARTER_Y_INDICES = (1, 6)
@@ -12,6 +14,10 @@ class Knight(Piece):
     def __init__(self, color):
         symbol = Knight.BLACK_SYMBOL if color == BLACK_COLOR else Knight.WHITE_SYMBOL
         Piece.__init__(self, color, symbol, None)
+
+    @staticmethod
+    def get_signature():
+        return Knight.SIGNATURE
 
     @staticmethod
     def is_sliding_piece():
@@ -28,3 +34,6 @@ class Knight(Piece):
 
     def switch_orientation(self):
         pass
+
+    def get_special_moves(self):
+        return None

@@ -43,6 +43,7 @@ class Piece(ABC):
 
     @abstractmethod
     def get_conditional_attacking_moves(self):
+        # moves that are activated only if there is a piece to attack
         pass
 
     @abstractmethod
@@ -53,3 +54,11 @@ class Piece(ABC):
     def switch_orientation(self):
         pass
 
+    @abstractmethod
+    def get_special_moves(self):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_signature():
+        pass

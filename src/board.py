@@ -1,10 +1,14 @@
 from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
+from src.util.special_positions_calculator import SpecialPositionsCalculator
+from src.util.moves_tracker import MovesTracker
+from src.util.move_played import MovePlayed
+import copy
 
 class Board:
 
-    def __init__(self):
+    def __init__(self, moves_tracker):
         self.__grid = self.__create_empty_grid()
         # x axis on grid is top to bottom
         self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
@@ -12,20 +16,23 @@ class Board:
         self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
         # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
         self.__flipped = False
+        self.__moves_tracker = moves_tracker
 
-    def move_piece_to_new_position(self, piece, new_position):
+    @property
+    def moves_tracker(self):
+        return copy.deepcopy(self.__moves_tracker)
+
+    @property
+    def grid(self):
+        return copy.deepcopy(self.__grid)
+
+    def move_piece_to_new_position(self, piece, new_position, is_permanent = False):
         current_x_position_for_piece, current_y_position_for_piece = piece.current_position
         self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
+        if is_permanent:
+            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
+            self.__moves_tracker.add_move(new_move, piece.color)
         self.add_piece_to_board(piece, new_position)
-
-    def get_king(self, color):
-        for x in range(8):
-            for y in range(8):
-                piece = self.get_piece_on_grid_position((x, y))
-                if isinstance(piece, King) and piece.color == color:
-                    return piece
-
-        return None
 
     def get_defending_positions_for_piece(self, piece):
         return self.__get_positions_for_piece(piece, DEFENDING_POSITION)
@@ -46,7 +53,7 @@ class Board:
         return self.__get_positions_for_color(color, AVAILABLE_POSITION)
 
     def is_in_checkmate(self, color):
-        king = self.get_king(color)
+        king = self.__get_king(color)
         available_moves_for_king = self.get_available_positions_for_piece(king)
 
         if len(available_moves_for_king) == 0:
@@ -246,9 +253,9 @@ class Board:
         conditional_attacking_moves = piece.get_conditional_attacking_moves()
         move_type = position_type
 
-        # if piece is King, we have to make sure none of the positions it can take are under attack or being defended
+        # if piece is King and looking for available positions, make sure none of the positions are under attack or being defended
         attacked_positions = set()
-        if isinstance(piece, King):
+        if isinstance(piece, King) and position_type == AVAILABLE_POSITION:
             opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
             attacked_positions = self.get_attacking_positions(opposite_color)
             attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
@@ -282,6 +289,10 @@ class Board:
                         y_pos += move[1]
                         positions.add((x_pos, y_pos))
 
+        if piece.get_special_moves() is not None:
+            special_positions = SpecialPositionsCalculator.get_special_positions(piece, position_type, self)
+            positions = positions.union(special_positions)
+
         return positions.difference(attacked_positions)
 
     def __get_positions_for_color(self, color, position_type):
@@ -293,6 +304,15 @@ class Board:
                     positions = positions.union(self.__get_positions_for_piece(piece, position_type))
 
         return positions
+
+    def __get_king(self, color):
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_piece_on_grid_position((x, y))
+                if isinstance(piece, King) and piece.color == color:
+                    return piece
+
+        return None
 
 
 

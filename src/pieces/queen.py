@@ -1,7 +1,9 @@
-from src.util.chess_constants import BLACK_COLOR
+from src.util.chess_constants import BLACK_COLOR, QUEEN_SIGNATURE
 from .piece import Piece
 
 class Queen(Piece):
+    SIGNATURE = QUEEN_SIGNATURE
+
     BLACK_SYMBOL = "♛"
     WHITE_SYMBOL = "♕"
     DEFAULT_STARTER_Y_INDEX = 3
@@ -12,6 +14,10 @@ class Queen(Piece):
     def __init__(self, color):
         symbol = Queen.BLACK_SYMBOL if color == BLACK_COLOR else Queen.WHITE_SYMBOL
         Piece.__init__(self, color, symbol, None)
+
+    @staticmethod
+    def get_signature():
+        return Queen.SIGNATURE
 
     @staticmethod
     def is_sliding_piece():
@@ -28,3 +34,6 @@ class Queen(Piece):
 
     def switch_orientation(self):
         pass
+
+    def get_special_moves(self):
+        return None

@@ -1,7 +1,9 @@
-from src.util.chess_constants import BLACK_COLOR
+from src.util.chess_constants import BLACK_COLOR, BISHOP_SIGNATURE
 from .piece import Piece
 
 class Bishop(Piece):
+    SIGNATURE = BISHOP_SIGNATURE
+
     BLACK_SYMBOL = "♝"
     WHITE_SYMBOL = "♗"
     STARTER_Y_INDICES = (2, 5)
@@ -11,6 +13,10 @@ class Bishop(Piece):
     def __init__(self, color):
         symbol = Bishop.BLACK_SYMBOL if color == BLACK_COLOR else Bishop.WHITE_SYMBOL
         Piece.__init__(self, color, symbol, None)
+
+    @staticmethod
+    def get_signature():
+        return Bishop.SIGNATURE
 
     @staticmethod
     def is_sliding_piece():
@@ -27,4 +33,7 @@ class Bishop(Piece):
 
     def switch_orientation(self):
         pass
+
+    def get_special_moves(self):
+        return None
 
