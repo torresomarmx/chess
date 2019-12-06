@@ -1,7 +1,16 @@
-from src.pieces import Pawn
+from src.pieces import Pawn, Queen
 from src.util.chess_constants import BLACK_COLOR, NORTH_TO_SOUTH_ORIENTATION, SOUTH_TO_NORTH_ORIENTATION, PAWN_SIGNATURE
 
-class SpecialPositionsCalculator:
+class SpecialPositionsHandler:
+
+    @classmethod
+    def is_pawn_ready_for_promotion(cls, pawn, new_position):
+        return (pawn.orientation == NORTH_TO_SOUTH_ORIENTATION and new_position[0] == 7) or \
+            (pawn.orientation == SOUTH_TO_NORTH_ORIENTATION and new_position[0] == 0)
+
+    @classmethod
+    def get_promotion_piece(cls, color):
+        return Queen(color)
 
     @classmethod
     def get_en_passant_position(cls, pawn, board):

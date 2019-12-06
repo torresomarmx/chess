@@ -1,7 +1,7 @@
-from src.util.chess_constants import BLACK_COLOR, WHITE_COLOR, ATTACKING_POSITION, DEFENDING_POSITION, AVAILABLE_POSITION, PAWN_SIGNATURE, KING_SIGNATURE
+from src.util.chess_constants import *
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
-from src.util.special_positions_calculator import SpecialPositionsCalculator
+from src.util.special_positions_calculator import SpecialPositionsHandler
 from src.util.moves_tracker import MovesTracker
 from src.util.move_played import MovePlayed
 import copy
@@ -30,10 +30,15 @@ class Board:
         valid_positions = self.get_available_positions_for_piece(piece)
         if new_position in valid_positions:
             if piece.get_signature() == PAWN_SIGNATURE:
-                en_passant_position = SpecialPositionsCalculator.get_en_passant_position(piece, self)
+                en_passant_position = SpecialPositionsHandler.get_en_passant_position(piece, self)
+
                 if new_position == en_passant_position:
                     position_of_pawn_to_take = (piece.current_position[0], en_passant_position[1])
                     self.__move_piece_to_new_position(piece, new_position, is_permanent, position_of_pawn_to_take)
+                elif SpecialPositionsHandler.is_pawn_ready_for_promotion(piece, new_position):
+                    new_promotion_piece = SpecialPositionsHandler.get_promotion_piece(piece.color)
+                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
+                    self.add_piece_to_board(new_promotion_piece, new_position)
                 else:
                     self.__move_piece_to_new_position(piece, new_position, is_permanent)
             else:
@@ -278,7 +283,7 @@ class Board:
                         positions.add((x_pos, y_pos))
 
         if piece.get_special_moves() is not None:
-            special_positions = SpecialPositionsCalculator.get_special_positions(piece, position_type, self)
+            special_positions = SpecialPositionsHandler.get_special_positions(piece, position_type, self)
             positions = positions.union(special_positions)
 
         return positions.difference(attacked_positions)
