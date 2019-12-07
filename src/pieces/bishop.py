@@ -22,6 +22,10 @@ class Bishop(Piece):
     def is_sliding_piece():
         return True
 
+    @staticmethod
+    def has_special_moves():
+        return False
+
     def get_attacking_moves(self):
         return Bishop.POSITIONAL_MOVES
 
@@ -33,7 +37,4 @@ class Bishop(Piece):
 
     def switch_orientation(self):
         pass
-
-    def get_special_moves(self):
-        return None
 

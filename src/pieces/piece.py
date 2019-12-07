@@ -37,6 +37,16 @@ class Piece(ABC):
     def is_sliding_piece():
         pass
 
+    @staticmethod
+    @abstractmethod
+    def has_special_moves():
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_signature():
+        pass
+
     @abstractmethod
     def get_attacking_moves(self):
         pass
@@ -52,13 +62,4 @@ class Piece(ABC):
 
     @abstractmethod
     def switch_orientation(self):
-        pass
-
-    @abstractmethod
-    def get_special_moves(self):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def get_signature():
         pass

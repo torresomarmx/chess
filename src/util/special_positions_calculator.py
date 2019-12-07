@@ -1,7 +1,20 @@
 from src.pieces import Pawn, Queen
-from src.util.chess_constants import BLACK_COLOR, NORTH_TO_SOUTH_ORIENTATION, SOUTH_TO_NORTH_ORIENTATION, PAWN_SIGNATURE
+from src.util.chess_constants import *
 
 class SpecialPositionsHandler:
+
+    @classmethod
+    def get_castling_positions(cls, king, board):
+        if king.get_signature() == KING_SIGNATURE:
+            opponent_color = BLACK_COLOR if king.color == WHITE_COLOR else BLACK_COLOR
+            attacked_positions = board.get_attacking_positions(opponent_color)
+
+            # check that king has not moved and not in check
+            # check left side and see if there is a rook on the end that has not moved
+            # do the same for right side
+            # make sure path from rook(s) to king
+        else:
+            return set()
 
     @classmethod
     def is_pawn_ready_for_promotion(cls, pawn, new_position):
@@ -38,7 +51,7 @@ class SpecialPositionsHandler:
                 return None
 
             # check if pawn has an opponent pawn on either it's left or right side
-            for special_move in pawn.get_special_moves():
+            for special_move in pawn.get_conditional_attacking_moves():
                 adjacent_piece = board.get_piece_on_grid_position((current_x_position, current_y_position + special_move[1]))
                 if adjacent_piece is not None and adjacent_piece.current_position == opponent_pawn_position:
                     return (current_x_position + special_move[0], current_y_position + special_move[1])
@@ -53,3 +66,5 @@ class SpecialPositionsHandler:
             if en_passant_position is not None:
                 set_to_return.add(en_passant_position)
             return set_to_return
+        elif piece.get_signature() == KING_SIGNATURE:
+            castling_positions = cls.get_castling_positions(piece, board)

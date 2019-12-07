@@ -30,6 +30,10 @@ class Pawn(Piece):
     def is_sliding_piece():
         return False
 
+    @staticmethod
+    def has_special_moves():
+        return True
+
     def get_attacking_moves(self):
         return None
 
@@ -57,9 +61,6 @@ class Pawn(Piece):
         north = NORTH_TO_SOUTH_ORIENTATION
         south = SOUTH_TO_NORTH_ORIENTATION
         self.orientation = north if self.orientation == south else south
-
-    def get_special_moves(self):
-        return self.get_conditional_attacking_moves()
 
     def __made_first_move(self):
         current_rank = self.current_position[0]

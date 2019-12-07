@@ -246,22 +246,11 @@ class Board:
         conditional_attacking_moves = piece.get_conditional_attacking_moves()
         move_type = position_type
 
-        # if piece is King and looking for available positions, make sure none of the positions are under attack or being defended
-        attacked_positions = set()
-        if isinstance(piece, King) and position_type == AVAILABLE_POSITION:
-            opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
-            attacked_positions = self.get_attacking_positions(opposite_color)
-            attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
-
-        if conditional_attacking_moves is not None:
-            moves_to_check.append((True, conditional_attacking_moves))
-
+        moves_to_check.append((True, conditional_attacking_moves))
         if position_type == DEFENDING_POSITION or position_type == ATTACKING_POSITION:
-            moves = piece.get_attacking_moves()
-            if moves is not None: moves_to_check.append( (False, moves) )
+            moves_to_check.append( (False, piece.get_attacking_moves()) )
         elif position_type == AVAILABLE_POSITION:
-            moves = piece.get_positional_moves()
-            if moves is not None: moves_to_check.append( (False, moves) )
+            moves_to_check.append( (False, piece.get_positional_moves()) )
 
         for are_conditional_attacking_moves, moves in moves_to_check:
             if moves is None:
@@ -282,9 +271,16 @@ class Board:
                         y_pos += move[1]
                         positions.add((x_pos, y_pos))
 
-        if piece.get_special_moves() is not None:
+        if piece.has_special_moves():
             special_positions = SpecialPositionsHandler.get_special_positions(piece, position_type, self)
             positions = positions.union(special_positions)
+
+        # if piece is King and looking for available positions, make sure none of the positions are under attack or being defended
+        attacked_positions = set()
+        if piece.get_signature() == KING_SIGNATURE and position_type == AVAILABLE_POSITION:
+            opposite_color = BLACK_COLOR if piece.color == WHITE_COLOR else WHITE_COLOR
+            attacked_positions = self.get_attacking_positions(opposite_color)
+            attacked_positions = attacked_positions.union(self.get_defending_positions(opposite_color))
 
         return positions.difference(attacked_positions)
 

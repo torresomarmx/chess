@@ -23,6 +23,10 @@ class King(Piece):
     def is_sliding_piece():
         return False
 
+    @staticmethod
+    def has_special_moves():
+        return True
+
     def get_attacking_moves(self):
         return King.POSITIONAL_MOVES
 
@@ -34,6 +38,3 @@ class King(Piece):
 
     def switch_orientation(self):
         pass
-
-    def get_special_moves(self):
-        return None
