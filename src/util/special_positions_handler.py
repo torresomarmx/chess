@@ -9,19 +9,21 @@ class SpecialPositionsHandler:
             # TODO: also check that king is in first rank and that it is in one of two legal positions for king
             if king.number_of_moves == 0:
                 attacked_positions = board.get_attacking_positions(BLACK_COLOR if king.color == WHITE_COLOR else WHITE_COLOR)
+                if king.current_position in attacked_positions:
+                    return None
                 current_x, current_y = king.current_position
-                rook_x_position = 0 if side == LEFT_SIDE else 7
-                x_incrementer = -1 if side == LEFT_SIDE else 1
-                search_x = current_x + x_incrementer
-                positions_between_king_and_rook = {(search_x, current_y)}
-                while search_x != rook_x_position and board.get_piece_on_grid_position((search_x, current_y)) is None:
-                    search_x += x_incrementer
-                    positions_between_king_and_rook.add((search_x, current_y))
+                rook_y_position = 0 if side == LEFT_SIDE else 7
+                y_incrementer = -1 if side == LEFT_SIDE else 1
+                search_y = current_y + y_incrementer
+                positions_between_king_and_rook = {(current_x, search_y)}
+                while search_y != rook_y_position and board.get_piece_on_grid_position((current_x, search_y)) is None:
+                    search_y += y_incrementer
+                    positions_between_king_and_rook.add((current_x, search_y))
 
-                found_piece = board.get_piece_on_grid_position((search_x, current_y))
-                if (search_x == rook_x_position and found_piece is not None and found_piece.get_signature() == ROOK_SIGNATURE
+                found_piece = board.get_piece_on_grid_position((current_x, search_y))
+                if (search_y == rook_y_position and found_piece is not None and found_piece.get_signature() == ROOK_SIGNATURE
                         and found_piece.number_of_moves == 0 and all(pos not in attacked_positions for pos in positions_between_king_and_rook)):
-                    return (current_x + (2 * x_incrementer), current_y)
+                    return (current_x, current_y + (2 * y_incrementer))
 
         return None
 
@@ -82,10 +84,10 @@ class SpecialPositionsHandler:
     @classmethod
     def get_special_positions(cls, piece, position_type, board):
         if piece.get_signature() == PAWN_SIGNATURE:
-            en_passant_position = cls.get_en_passant_position(piece, board)
             set_to_return = set()
+            en_passant_position = cls.get_en_passant_position(piece, board)
             if en_passant_position is not None:
                 set_to_return.add(en_passant_position)
             return set_to_return
         elif piece.get_signature() == KING_SIGNATURE:
-            castling_positions = cls.get_castling_positions(piece, board)
+            return cls.get_castling_positions(piece, board)

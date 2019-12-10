@@ -45,9 +45,9 @@ class Board:
                 left_castling_position = SpecialPositionsHandler.get_castling_position(piece, LEFT_SIDE, self)
                 right_castling_position = SpecialPositionsHandler.get_castling_position(piece, RIGHT_SIDE, self)
                 if new_position == left_castling_position:
-
+                    new_position_for_left_rook = (piece.current_position[0], piece.current_position[1] - 1)
                 elif new_position == right_castling_position:
-
+                    new_position_for_right_rook = (piece.current_position[0], piece.current_position[1] + 1)
                 else:
                     self.__move_piece_to_new_position(piece, new_position, is_permanent)
             else:
@@ -263,8 +263,7 @@ class Board:
             moves_to_check.append( (False, piece.get_positional_moves()) )
 
         for are_conditional_attacking_moves, moves in moves_to_check:
-            if moves is None:
-                continue
+            if moves is None: continue
             for move in moves:
                 if self.__is_move_available_or_defended(piece, move, are_conditional_attacking_moves, move_type):
                     potential_x_position = current_x_position + move[0]
@@ -274,6 +273,7 @@ class Board:
         # then check if piece is sliding piece
         if piece.is_sliding_piece():
             for are_conditional_attacking_moves, moves in moves_to_check:
+                if moves is None: continue
                 for move in moves:
                     x_pos, y_pos = piece.current_position
                     while self.__is_move_available_or_defended(piece, move, are_conditional_attacking_moves, move_type, (x_pos, y_pos)):
