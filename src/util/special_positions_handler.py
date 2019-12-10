@@ -4,17 +4,38 @@ from src.util.chess_constants import *
 class SpecialPositionsHandler:
 
     @classmethod
-    def get_castling_positions(cls, king, board):
+    def get_castling_position(cls, king, side, board):
         if king.get_signature() == KING_SIGNATURE:
-            opponent_color = BLACK_COLOR if king.color == WHITE_COLOR else BLACK_COLOR
-            attacked_positions = board.get_attacking_positions(opponent_color)
+            # TODO: also check that king is in first rank and that it is in one of two legal positions for king
+            if king.number_of_moves == 0:
+                attacked_positions = board.get_attacking_positions(BLACK_COLOR if king.color == WHITE_COLOR else WHITE_COLOR)
+                current_x, current_y = king.current_position
+                rook_x_position = 0 if side == LEFT_SIDE else 7
+                x_incrementer = -1 if side == LEFT_SIDE else 1
+                search_x = current_x + x_incrementer
+                positions_between_king_and_rook = {(search_x, current_y)}
+                while search_x != rook_x_position and board.get_piece_on_grid_position((search_x, current_y)) is None:
+                    search_x += x_incrementer
+                    positions_between_king_and_rook.add((search_x, current_y))
 
-            # check that king has not moved and not in check
-            # check left side and see if there is a rook on the end that has not moved
-            # do the same for right side
-            # make sure path from rook(s) to king
-        else:
-            return set()
+                found_piece = board.get_piece_on_grid_position((search_x, current_y))
+                if (search_x == rook_x_position and found_piece is not None and found_piece.get_signature() == ROOK_SIGNATURE
+                        and found_piece.number_of_moves == 0 and all(pos not in attacked_positions for pos in positions_between_king_and_rook)):
+                    return (current_x + (2 * x_incrementer), current_y)
+
+        return None
+
+    @classmethod
+    def get_castling_positions(cls, king, board):
+        castling_positions = set()
+        if king.get_signature() == KING_SIGNATURE:
+            sides = [LEFT_SIDE, RIGHT_SIDE]
+            for side in sides:
+                position = SpecialPositionsHandler.get_castling_position(king, side, board)
+                if position is not None:
+                    castling_positions.add(position)
+
+        return castling_positions
 
     @classmethod
     def is_pawn_ready_for_promotion(cls, pawn, new_position):

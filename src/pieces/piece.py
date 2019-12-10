@@ -7,6 +7,14 @@ class Piece(ABC):
         self.__symbol = symbol
         self.__orientation = orientation
         self.current_position = None
+        self.__number_of_moves = 0
+
+    @property
+    def number_of_moves(self):
+        return self.__number_of_moves
+
+    def increment_number_of_moves(self):
+        self.__number_of_moves += 1
 
     @property
     def color(self):

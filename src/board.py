@@ -1,7 +1,7 @@
 from src.util.chess_constants import *
 from colorama import Fore, Back, Style
 from src.pieces import Pawn, Rook, Knight, Bishop, King, Queen
-from src.util.special_positions_calculator import SpecialPositionsHandler
+from src.util.special_positions_handler import SpecialPositionsHandler
 from src.util.moves_tracker import MovesTracker
 from src.util.move_played import MovePlayed
 import copy
@@ -39,6 +39,15 @@ class Board:
                     new_promotion_piece = SpecialPositionsHandler.get_promotion_piece(piece.color)
                     self.__move_piece_to_new_position(piece, new_position, is_permanent)
                     self.add_piece_to_board(new_promotion_piece, new_position)
+                else:
+                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
+            elif piece.get_signature() == KING_SIGNATURE:
+                left_castling_position = SpecialPositionsHandler.get_castling_position(piece, LEFT_SIDE, self)
+                right_castling_position = SpecialPositionsHandler.get_castling_position(piece, RIGHT_SIDE, self)
+                if new_position == left_castling_position:
+
+                elif new_position == right_castling_position:
+
                 else:
                     self.__move_piece_to_new_position(piece, new_position, is_permanent)
             else:
@@ -176,6 +185,7 @@ class Board:
         if is_permanent:
             new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
             self.__moves_tracker.add_move(new_move, piece.color)
+            piece.increment_number_of_moves()
 
         self.add_piece_to_board(piece, new_position)
         if position_of_piece_to_take is not None:
