@@ -18,6 +18,15 @@ class Board:
         self.__flipped = False
         self.__moves_tracker = moves_tracker
 
+    def get_king(self, color):
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_piece_on_grid_position((x, y))
+                if isinstance(piece, King) and piece.color == color:
+                    return piece
+
+        return None
+
     @property
     def moves_tracker(self):
         return copy.deepcopy(self.__moves_tracker)
@@ -304,17 +313,8 @@ class Board:
 
         return positions
 
-    def __get_king(self, color):
-        for x in range(8):
-            for y in range(8):
-                piece = self.get_piece_on_grid_position((x, y))
-                if isinstance(piece, King) and piece.color == color:
-                    return piece
-
-        return None
-
     def __get_in_check_available_positions(self, color):
-        king = self.__get_king(color)
+        king = self.get_king(color)
         available_positions_for_king = self.get_available_positions_for_piece(king)
         in_check_available_positions = set()
 
