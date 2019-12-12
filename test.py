@@ -6,7 +6,13 @@ from src.util.moves_tracker import MovesTracker
 from src.game import Game
 
 if __name__ == "__main__":
-    game = Game()
+    test_board = Board()
+    test_board.set_up_board_for_new_game()
+    pawn = test_board.get_piece_on_grid_position((6,1))
+    test_board.move_piece_to_new_position(pawn, (3, 1), True)
+    pawn2 = test_board.get_piece_on_grid_position((1, 2))
+    test_board.move_piece_to_new_position(pawn2, (2, 2), True)
+    game = Game(test_board, WHITE_COLOR)
     game.start()
 
 

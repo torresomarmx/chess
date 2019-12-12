@@ -8,7 +8,7 @@ import copy
 
 class Board:
 
-    def __init__(self, moves_tracker):
+    def __init__(self, moves_tracker = None):
         self.__grid = self.__create_empty_grid()
         # x axis on grid is top to bottom
         self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping()
@@ -16,7 +16,10 @@ class Board:
         self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
         # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
         self.__flipped = False
-        self.__moves_tracker = moves_tracker
+        if moves_tracker is None:
+            self.__moves_tracker = MovesTracker()
+        else:
+            self.__moves_tracker = moves_tracker
 
     def is_valid_notation_position(self, notation_position):
         if len(notation_position) != 2:
@@ -40,7 +43,7 @@ class Board:
             x_position, y_position = grid_position
             x_index_to_rank_mapping = {x_index : rank for rank, x_index in self.__rank_to_xindex_mapping.items()}
             y_index_to_file_mapping = {y_index : file for file, y_index in self.__file_to_yindex_mapping.items()}
-            return (x_index_to_rank_mapping[x_position], y_index_to_file_mapping[y_position])
+            return (y_index_to_file_mapping[y_position], x_index_to_rank_mapping[x_position])
         return None
 
     def get_king(self, color):

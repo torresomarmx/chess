@@ -5,12 +5,16 @@ from src.board import Board
 
 class Game:
 
-    def __init__(self):
-        self.board = Board(MovesTracker())
-        self.color_to_move = WHITE_COLOR
+    def __init__(self, board = None, color_to_move = None):
+        if board is None:
+            self.board = Board(MovesTracker())
+            self.board.set_up_board_for_new_game()
+            self.color_to_move = WHITE_COLOR
+        else:
+            self.board = board
+            self.color_to_move = color_to_move
 
     def start(self):
-        self.board.set_up_board_for_new_game()
         while True:
             self.board.display()
             opposite_color = BLACK_COLOR if self.color_to_move == WHITE_COLOR else WHITE_COLOR
@@ -68,7 +72,7 @@ class Game:
                     continue
                 else:
                     if piece.get_signature() == PAWN_SIGNATURE:
-                        en_passant_position = SpecialPositionsHandler.get_en_passant_position(piece, self)
+                        en_passant_position = SpecialPositionsHandler.get_en_passant_position(piece, self.board)
                         if chosen_position == en_passant_position:
                             position_of_pawn_to_take = (piece.current_position[0], en_passant_position[1])
                             self.board.move_piece_to_new_position(piece, chosen_position, True, position_of_pawn_to_take)
@@ -79,8 +83,8 @@ class Game:
                         else:
                             self.board.move_piece_to_new_position(piece, chosen_position, True)
                     elif piece.get_signature() == KING_SIGNATURE:
-                        left_castling_position = SpecialPositionsHandler.get_castling_position(piece, LEFT_SIDE, self)
-                        right_castling_position = SpecialPositionsHandler.get_castling_position(piece, RIGHT_SIDE, self)
+                        left_castling_position = SpecialPositionsHandler.get_castling_position(piece, LEFT_SIDE, self.board)
+                        right_castling_position = SpecialPositionsHandler.get_castling_position(piece, RIGHT_SIDE, self.board)
                         if chosen_position == left_castling_position:
                             new_position_for_left_rook = (piece.current_position[0], piece.current_position[1] - 1)
                             left_rook = self.board.get_piece_on_grid_position((piece.current_position[0], 0))

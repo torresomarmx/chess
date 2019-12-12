@@ -66,8 +66,12 @@ class SpecialPositionsHandler:
                 opponent_previous_move = board.moves_tracker.black_moves[-1]
 
             # check if opponent moved pawn, and if opponent pawn moved 2 positions forward on first move
-            opponent_previous_move_old_grid_position = board.get_grid_position_from_notation_position(opponent_previous_move.old_position)
-            opponent_previous_move_new_grid_position = board.get_grid_position_from_notation_position(opponent_previous_move.new_position)
+            opponent_previous_move_old_grid_position = board.get_grid_position_from_notation_position(
+                opponent_previous_move.old_position[0] + opponent_previous_move.old_position[1]
+            )
+            opponent_previous_move_new_grid_position = board.get_grid_position_from_notation_position(
+                opponent_previous_move.new_position[0] + opponent_previous_move.new_position[1]
+            )
             piece_displacement = abs(opponent_previous_move_old_grid_position[0] - opponent_previous_move_new_grid_position[0])
             opponent_pawn_position = None
             if opponent_previous_move.piece_signature == PAWN_SIGNATURE and piece_displacement == 2:
