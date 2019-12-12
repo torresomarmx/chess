@@ -35,6 +35,14 @@ class Board:
             return (self.__rank_to_xindex_mapping[rank], self.__file_to_yindex_mapping[file])
         return None
 
+    def get_notation_position_from_grid_position(self, grid_position):
+        if self.__is_position_on_board(grid_position):
+            x_position, y_position = grid_position
+            x_index_to_rank_mapping = {x_index : rank for rank, x_index in self.__rank_to_xindex_mapping.items()}
+            y_index_to_file_mapping = {y_index : file for file, y_index in self.__file_to_yindex_mapping.items()}
+            return (x_index_to_rank_mapping[x_position], y_index_to_file_mapping[y_position])
+        return None
+
     def get_king(self, color):
         for x in range(8):
             for y in range(8):
@@ -56,7 +64,9 @@ class Board:
         current_x_position_for_piece, current_y_position_for_piece = piece.current_position
         self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
         if add_to_moves_tracker:
-            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
+            current_notation_position = self.get_notation_position_from_grid_position(piece.current_position)
+            new_notation_position = self.get_notation_position_from_grid_position(new_position)
+            new_move = MovePlayed(piece.get_signature(), current_notation_position, new_notation_position)
             self.__moves_tracker.add_move(new_move, piece.color)
             piece.increment_number_of_moves()
 
