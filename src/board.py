@@ -18,6 +18,23 @@ class Board:
         self.__flipped = False
         self.__moves_tracker = moves_tracker
 
+    def is_valid_notation_position(self, notation_position):
+        if len(notation_position) != 2:
+            return False
+        file = notation_position[0]
+        rank = notation_position[1]
+        if file not in self.__file_to_yindex_mapping or rank not in self.__rank_to_xindex_mapping:
+            return False
+
+        return True
+
+    def get_grid_position_from_notation_position(self, notation_position):
+        if self.is_valid_notation_position(notation_position.upper()):
+            file = notation_position[0]
+            rank = notation_position[1]
+            return (self.__rank_to_xindex_mapping[rank], self.__file_to_yindex_mapping[file])
+        return None
+
     def get_king(self, color):
         for x in range(8):
             for y in range(8):
@@ -35,33 +52,17 @@ class Board:
     def grid(self):
         return copy.deepcopy(self.__grid)
 
-    def move_piece_to_new_position(self, piece, new_position, is_permanent = False):
-        valid_positions = self.get_available_positions_for_piece(piece)
-        if new_position in valid_positions:
-            if piece.get_signature() == PAWN_SIGNATURE:
-                en_passant_position = SpecialPositionsHandler.get_en_passant_position(piece, self)
+    def move_piece_to_new_position(self, piece, new_position, add_to_moves_tracker = False, position_of_piece_to_take = None):
+        current_x_position_for_piece, current_y_position_for_piece = piece.current_position
+        self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
+        if add_to_moves_tracker:
+            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
+            self.__moves_tracker.add_move(new_move, piece.color)
+            piece.increment_number_of_moves()
 
-                if new_position == en_passant_position:
-                    position_of_pawn_to_take = (piece.current_position[0], en_passant_position[1])
-                    self.__move_piece_to_new_position(piece, new_position, is_permanent, position_of_pawn_to_take)
-                elif SpecialPositionsHandler.is_pawn_ready_for_promotion(piece, new_position):
-                    new_promotion_piece = SpecialPositionsHandler.get_promotion_piece(piece.color)
-                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
-                    self.add_piece_to_board(new_promotion_piece, new_position)
-                else:
-                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
-            elif piece.get_signature() == KING_SIGNATURE:
-                left_castling_position = SpecialPositionsHandler.get_castling_position(piece, LEFT_SIDE, self)
-                right_castling_position = SpecialPositionsHandler.get_castling_position(piece, RIGHT_SIDE, self)
-                if new_position == left_castling_position:
-                    new_position_for_left_rook = (piece.current_position[0], piece.current_position[1] - 1)
-                elif new_position == right_castling_position:
-                    new_position_for_right_rook = (piece.current_position[0], piece.current_position[1] + 1)
-                else:
-                    self.__move_piece_to_new_position(piece, new_position, is_permanent)
-            else:
-                self.__move_piece_to_new_position(piece, new_position, is_permanent)
-
+        self.add_piece_to_board(piece, new_position)
+        if position_of_piece_to_take is not None:
+            self.__grid[position_of_piece_to_take[0]][position_of_piece_to_take[1]] = None
 
     def get_defending_positions_for_piece(self, piece):
         return self.__get_positions_for_piece(piece, DEFENDING_POSITION)
@@ -178,28 +179,9 @@ class Board:
             print(" {} ".format(Fore.WHITE + index_to_files_mapping.get(index)), end="")
         print()
 
-    def get_piece_on_notation_position(self, position):
-        file, rank = position
-        x_index = self.__rank_to_xindex_mapping[rank]
-        y_index = self.__file_to_yindex_mapping[file]
-        return self.__grid[x_index][y_index]
-
     def get_piece_on_grid_position(self, position):
         x_index, y_index = position
         return self.__grid[x_index][y_index]
-
-    def __move_piece_to_new_position(self, piece, new_position, is_permanent, position_of_piece_to_take = None):
-        current_x_position_for_piece, current_y_position_for_piece = piece.current_position
-        self.__grid[current_x_position_for_piece][current_y_position_for_piece] = None
-        if is_permanent:
-            new_move = MovePlayed(piece.get_signature(), piece.current_position, new_position)
-            self.__moves_tracker.add_move(new_move, piece.color)
-            piece.increment_number_of_moves()
-
-        self.add_piece_to_board(piece, new_position)
-        if position_of_piece_to_take is not None:
-            self.__grid[position_of_piece_to_take[0]][position_of_piece_to_take[1]] = None
-
 
     def __create_empty_grid(self):
         return [[None for x in range(8)] for y in range(8)]
@@ -290,7 +272,7 @@ class Board:
                         y_pos += move[1]
                         positions.add((x_pos, y_pos))
 
-        if piece.has_special_moves():
+        if piece.has_special_moves() and position_type == AVAILABLE_POSITION:
             special_positions = SpecialPositionsHandler.get_special_positions(piece, position_type, self)
             positions = positions.union(special_positions)
 
@@ -332,13 +314,13 @@ class Board:
                         for available_position in available_positions_for_piece:
                             # temporarily move piece to available position
                             piece_at_available_position = self.get_piece_on_grid_position(available_position)
-                            self.__move_piece_to_new_position(piece, available_position, False)
+                            self.move_piece_to_new_position(piece, available_position, False)
 
                             new_attacked_positions = self.get_attacking_positions(opposite_color)
                             is_in_check = king.current_position in new_attacked_positions
 
                             # move everything back
-                            self.__move_piece_to_new_position(piece, piece_original_position, False)
+                            self.move_piece_to_new_position(piece, piece_original_position, False)
                             if piece_at_available_position is not None:
                                 self.add_piece_to_board(piece_at_available_position, available_position)
 

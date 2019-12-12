@@ -1,5 +1,6 @@
 from .piece import Piece
 from src.util.chess_constants import BLACK_COLOR, NORTH_TO_SOUTH_ORIENTATION, SOUTH_TO_NORTH_ORIENTATION, PAWN_SIGNATURE
+import copy
 
 class Pawn(Piece):
     SIGNATURE = PAWN_SIGNATURE
@@ -45,17 +46,17 @@ class Pawn(Piece):
 
     def get_positional_moves(self):
         if self.orientation == NORTH_TO_SOUTH_ORIENTATION:
-            one_step_moves = Pawn.NORTH_TO_SOUTH_POSITIONAL_MOVES
+            one_step_moves = copy.deepcopy(Pawn.NORTH_TO_SOUTH_POSITIONAL_MOVES)
             if not self.__made_first_move():
                 one_step_moves.add(Pawn.NORTH_TO_SOUTH_LEGAL_FIRST_MOVE)
 
             return one_step_moves
         else:
-            one_step_moves = Pawn.SOUTH_TO_NORTH_POSITIONAL_MOVES
+            one_step_moves = copy.deepcopy(Pawn.SOUTH_TO_NORTH_POSITIONAL_MOVES)
             if not self.__made_first_move():
                 one_step_moves.add(Pawn.SOUTH_TO_NORTH_LEGAL_FIRST_MOVE)
 
-            return Pawn.SOUTH_TO_NORTH_POSITIONAL_MOVES
+            return one_step_moves
 
     def switch_orientation(self):
         north = NORTH_TO_SOUTH_ORIENTATION
