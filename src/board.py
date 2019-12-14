@@ -227,7 +227,7 @@ class Board:
 
         return True
 
-    def __is_move_available_or_defended(self, piece, move, is_conditional_attacking_move, move_type, current_position = None):
+    def __is_position_available_or_defended(self, piece, move, is_conditional_attacking_move, move_type, current_position = None):
         current_x_position, current_y_position = piece.current_position if current_position is None else current_position
         potential_x_position, potential_y_position = (current_x_position + move[0], current_y_position + move[1])
 
@@ -250,8 +250,13 @@ class Board:
         else:
             if move_type == DEFENDING_POSITION:
                 return piece_at_potential_position.color == piece.color
-            elif move_type == AVAILABLE_POSITION or move_type == ATTACKING_POSITION:
+            elif move_type == ATTACKING_POSITION:
                 return piece_at_potential_position.color != piece.color
+            elif move_type == AVAILABLE_POSITION:
+                if piece.get_signature() == PAWN_SIGNATURE and not is_conditional_attacking_move:
+                    return False
+                else:
+                    return piece_at_potential_position.color != piece.color
 
     def __get_positions_for_piece(self, piece, position_type):
         positions = set()
@@ -269,7 +274,7 @@ class Board:
         for are_conditional_attacking_moves, moves in moves_to_check:
             if moves is None: continue
             for move in moves:
-                if self.__is_move_available_or_defended(piece, move, are_conditional_attacking_moves, move_type):
+                if self.__is_position_available_or_defended(piece, move, are_conditional_attacking_moves, move_type):
                     potential_x_position = current_x_position + move[0]
                     potential_y_position = current_y_position + move[1]
                     positions.add((potential_x_position, potential_y_position))
@@ -280,7 +285,7 @@ class Board:
                 if moves is None: continue
                 for move in moves:
                     x_pos, y_pos = piece.current_position
-                    while self.__is_move_available_or_defended(piece, move, are_conditional_attacking_moves, move_type, (x_pos, y_pos)):
+                    while self.__is_position_available_or_defended(piece, move, are_conditional_attacking_moves, move_type, (x_pos, y_pos)):
                         x_pos += move[0]
                         y_pos += move[1]
                         positions.add((x_pos, y_pos))
@@ -315,36 +320,43 @@ class Board:
 
         if len(available_positions_for_king) == 0:
             # begin simulating moves
-            opposite_color = WHITE_COLOR if color == BLACK_COLOR else BLACK_COLOR
-
             for x in range(8):
                 for y in range(8):
                     piece = self.get_piece_on_grid_position((x, y))
                     # we won't look at King again
                     if (piece is not None) and (piece.get_signature != KING_SIGNATURE) and (piece.color == color):
-                        piece_original_position = piece.current_position
-                        available_positions_for_piece = self.get_available_positions_for_piece(piece)
-                        for available_position in available_positions_for_piece:
-                            # temporarily move piece to available position
-                            piece_at_available_position = self.get_piece_on_grid_position(available_position)
-                            self.move_piece_to_new_position(piece, available_position, False)
-
-                            new_attacked_positions = self.get_attacking_positions(opposite_color)
-                            is_in_check = king.current_position in new_attacked_positions
-
-                            # move everything back
-                            self.move_piece_to_new_position(piece, piece_original_position, False)
-                            if piece_at_available_position is not None:
-                                self.add_piece_to_board(piece_at_available_position, available_position)
-
-                            if is_in_check:
-                                continue
-                            else:
-                                in_check_available_positions.add(available_position)
+                        in_check_available_positions = in_check_available_positions.union(
+                            self.get_available_positions_for_piece_after_simulation(piece, None, king)
+                        )
 
             return in_check_available_positions
         else:
             return available_positions_for_king
+
+    def get_available_positions_for_piece_after_simulation(self, piece, positions_to_simulate = None, king = None):
+        king = self.get_king(piece.color) if king is None else king
+
+        opposite_color = WHITE_COLOR if piece.color == BLACK_COLOR else BLACK_COLOR
+        available_positions_after_simulation = set()
+        piece_original_position = piece.current_position
+        available_positions_for_piece = self.get_available_positions_for_piece(piece) if positions_to_simulate is None else positions_to_simulate
+        for available_position in available_positions_for_piece:
+            # temporarily move piece to available position
+            piece_at_available_position = self.get_piece_on_grid_position(available_position)
+            self.move_piece_to_new_position(piece, available_position, False)
+            new_attacked_positions = self.get_attacking_positions(opposite_color)
+            is_in_check = king.current_position in new_attacked_positions
+
+            # move everything back
+            self.move_piece_to_new_position(piece, piece_original_position, False)
+            if piece_at_available_position is not None:
+                self.add_piece_to_board(piece_at_available_position, available_position)
+
+            if is_in_check:
+                continue
+            else:
+                available_positions_after_simulation.add(available_position)
+        return available_positions_after_simulation
 
 
 

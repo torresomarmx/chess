@@ -26,7 +26,8 @@ class Game:
                     print("Game over. Checkmate!")
                     break
                 else:
-                    self.__handle_new_move_for_player(self.color_to_move.color, in_check_available_positions)
+                    print(self.color_to_move + " is in check")
+                    self.__handle_new_move_for_player(self.color_to_move, in_check_available_positions)
             else:
                 available_positions = self.board.get_available_positions(self.color_to_move, False)
                 if len(available_positions) == 0:
@@ -58,7 +59,12 @@ class Game:
                 continue
 
             available_positions_for_piece = set(position for position in self.board.get_available_positions_for_piece(piece) if position in available_positions)
-            self.board.display(available_positions_for_piece)
+            available_positions_for_piece_after_simulation = self.board.get_available_positions_for_piece_after_simulation(piece, available_positions_for_piece)
+            if len(available_positions_for_piece_after_simulation) == 0:
+                print("Piece has no available positions! Select a different piece")
+                continue
+
+            self.board.display(available_positions_for_piece_after_simulation)
             while True:
                 chosen_position = input("Where would you like to move the selected piece? ")
                 if self.board.is_valid_notation_position(chosen_position.upper()):
@@ -67,7 +73,7 @@ class Game:
                     print("Invalid notation!")
                     continue
 
-                if chosen_position not in available_positions_for_piece:
+                if chosen_position not in available_positions_for_piece_after_simulation:
                     print("Invalid move")
                     continue
                 else:
