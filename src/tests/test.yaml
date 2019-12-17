@@ -3,8 +3,15 @@ is_board_flipped: false
 black_pieces:
   "A1" : "Ki"
 
+white_pieces:
+  "B2" : "Kn"
+
 black_moves_tracker:
-  - 0 :
-      old_position: "A1"
-      new_position: "B2"
-      piece_signature: "Pa"
+  - old_position: "A1"
+    new_position: "B2"
+    piece_signature: "Pa"
+
+white_moves_tracker:
+  - old_position: "B1"
+    new_position: "D3"
+    piece_signature: "Kn"

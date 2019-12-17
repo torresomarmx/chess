@@ -42,8 +42,8 @@ class Board:
 
             keys_for_pieces = ["black_pieces", "white_pieces"]
             for key in keys_for_pieces:
-                color = BLACK_COLOR if key == "black_pieces" else "white_pieces"
-                for notation_position, piece_signature in file_content[key]:
+                color = BLACK_COLOR if key == "black_pieces" else WHITE_COLOR
+                for notation_position, piece_signature in file_content[key].items():
                     grid_position = board.get_grid_position_from_notation_position(notation_position)
                     if piece_signature == BISHOP_SIGNATURE:
                         board.add_piece_to_board(Bishop(color), grid_position)
