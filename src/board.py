@@ -5,6 +5,7 @@ from src.util.special_positions_handler import SpecialPositionsHandler
 from src.util.moves_tracker import MovesTracker
 from src.util.move_played import MovePlayed
 import copy
+import yaml
 
 class Board:
 
@@ -20,6 +21,47 @@ class Board:
             self.__moves_tracker = MovesTracker()
         else:
             self.__moves_tracker = moves_tracker
+
+    @classmethod
+    def create_board_from_yaml_file(cls, file_name):
+        board = None
+        with open(file_name) as file:
+            file_content = yaml.full_load(file)
+
+            moves_tracker = MovesTracker()
+            keys_for_moves_tracker = ["black_moves_tracker", "white_moves_tracker"]
+            for key in keys_for_moves_tracker:
+                color = BLACK_COLOR if key == "black_moves_tracker" else "white_moves_tracker"
+                for move in file_content[key]:
+                    moves_tracker.add_move(
+                        MovePlayed(move["piece_signature"], move["old_position"], move["new_position"]),
+                        color
+                    )
+
+            board = Board(moves_tracker)
+
+            keys_for_pieces = ["black_pieces", "white_pieces"]
+            for key in keys_for_pieces:
+                color = BLACK_COLOR if key == "black_pieces" else "white_pieces"
+                for notation_position, piece_signature in file_content[key]:
+                    grid_position = board.get_grid_position_from_notation_position(notation_position)
+                    if piece_signature == BISHOP_SIGNATURE:
+                        board.add_piece_to_board(Bishop(color), grid_position)
+                    elif piece_signature == KING_SIGNATURE:
+                        board.add_piece_to_board(King(color), grid_position)
+                    elif piece_signature == KNIGHT_SIGNATURE:
+                        board.add_piece_to_board(Knight(color), grid_position)
+                    elif piece_signature == PAWN_SIGNATURE:
+                        board.add_piece_to_board(Pawn(color), grid_position)
+                    elif piece_signature == QUEEN_SIGNATURE:
+                        board.add_piece_to_board(Queen(color), grid_position)
+                    elif piece_signature == ROOK_SIGNATURE:
+                        board.add_piece_to_board(Rook(color), grid_position)
+
+            if file_content["is_board_flipped"]:
+                board.flip_board()
+
+        return board
 
     def is_valid_notation_position(self, notation_position):
         if len(notation_position) != 2:
@@ -196,6 +238,31 @@ class Board:
         x_index, y_index = position
         return self.__grid[x_index][y_index]
 
+    def get_available_positions_for_piece_after_simulation(self, piece, positions_to_simulate = None, king = None):
+        king = self.get_king(piece.color) if king is None else king
+
+        opposite_color = WHITE_COLOR if piece.color == BLACK_COLOR else BLACK_COLOR
+        available_positions_after_simulation = set()
+        piece_original_position = piece.current_position
+        available_positions_for_piece = self.get_available_positions_for_piece(piece) if positions_to_simulate is None else positions_to_simulate
+        for available_position in available_positions_for_piece:
+            # temporarily move piece to available position
+            piece_at_available_position = self.get_piece_on_grid_position(available_position)
+            self.move_piece_to_new_position(piece, available_position, False)
+            new_attacked_positions = self.get_attacking_positions(opposite_color)
+            is_in_check = king.current_position in new_attacked_positions
+
+            # move everything back
+            self.move_piece_to_new_position(piece, piece_original_position, False)
+            if piece_at_available_position is not None:
+                self.add_piece_to_board(piece_at_available_position, available_position)
+
+            if is_in_check:
+                continue
+            else:
+                available_positions_after_simulation.add(available_position)
+        return available_positions_after_simulation
+
     def __create_empty_grid(self):
         return [[None for x in range(8)] for y in range(8)]
 
@@ -332,31 +399,6 @@ class Board:
             return in_check_available_positions
         else:
             return available_positions_for_king
-
-    def get_available_positions_for_piece_after_simulation(self, piece, positions_to_simulate = None, king = None):
-        king = self.get_king(piece.color) if king is None else king
-
-        opposite_color = WHITE_COLOR if piece.color == BLACK_COLOR else BLACK_COLOR
-        available_positions_after_simulation = set()
-        piece_original_position = piece.current_position
-        available_positions_for_piece = self.get_available_positions_for_piece(piece) if positions_to_simulate is None else positions_to_simulate
-        for available_position in available_positions_for_piece:
-            # temporarily move piece to available position
-            piece_at_available_position = self.get_piece_on_grid_position(available_position)
-            self.move_piece_to_new_position(piece, available_position, False)
-            new_attacked_positions = self.get_attacking_positions(opposite_color)
-            is_in_check = king.current_position in new_attacked_positions
-
-            # move everything back
-            self.move_piece_to_new_position(piece, piece_original_position, False)
-            if piece_at_available_position is not None:
-                self.add_piece_to_board(piece_at_available_position, available_position)
-
-            if is_in_check:
-                continue
-            else:
-                available_positions_after_simulation.add(available_position)
-        return available_positions_after_simulation
 
 
 

@@ -1,0 +1,10 @@
+is_board_flipped: false
+
+black_pieces:
+  "A1" : "Ki"
+
+black_moves_tracker:
+  - 0 :
+      old_position: "A1"
+      new_position: "B2"
+      piece_signature: "Pa"
