@@ -16,13 +16,16 @@ if __name__ == "__main__":
     # game = Game(test_board, WHITE_COLOR)
     # game.start()
 
-    test_board = Board.create_board_from_yaml_file("./src/tests/test.yaml")
+    test_board = Board.create_board_from_yaml_file("./src/tests/en_passant_on_next_move.yaml")
+    game = Game(test_board, WHITE_COLOR)
+    game.start()
+
     # test_board.set_up_board_for_new_game()
     # pawn = test_board.get_piece_on_grid_position((6, 1))
     # test_board.move_piece_to_new_position(pawn, (3, 1), True)
     # pawn2 = test_board.get_piece_on_grid_position((1, 2))
     # test_board.move_piece_to_new_position(pawn2, (2, 2), True)
-    test_board.display()
+
 
 
 
