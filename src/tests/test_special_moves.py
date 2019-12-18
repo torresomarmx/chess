@@ -14,3 +14,15 @@ class TestBoard(unittest.TestCase):
             "En passant not possible on next move!"
         )
 
+    def test_en_passant_no_longer_available(self):
+        board = Board.create_board_from_yaml_file("./en_passant_no_longer_available.yaml")
+        available_positions = board.get_available_positions_for_piece(
+            board.get_piece_on_grid_position((3, 3))
+        )
+
+        self.assertTrue(
+            len(available_positions) == 1 and (2, 3) in available_positions,
+            "Pawn should only have 1 available move"
+        )
+
+

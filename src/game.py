@@ -65,12 +65,16 @@ class Game:
                 continue
 
             self.board.display(available_positions_for_piece_after_simulation)
+            undo_position_selection = False
             while True:
-                chosen_position = input("Where would you like to move the selected piece? ")
-                if self.board.is_valid_notation_position(chosen_position.upper()):
+                chosen_position = input("Where would you like to move the selected piece? Enter X to undo piece selection: ")
+                if chosen_position.upper() == "X":
+                    undo_position_selection = True
+                    break
+                elif self.board.is_valid_notation_position(chosen_position.upper()):
                     chosen_position = self.board.get_grid_position_from_notation_position(chosen_position.upper())
                 else:
-                    print("Invalid notation!")
+                    print("Invalid input/notation!")
                     continue
 
                 if chosen_position not in available_positions_for_piece_after_simulation:
@@ -107,7 +111,12 @@ class Game:
                         self.board.move_piece_to_new_position(piece, chosen_position, True)
                     # break while loop
                     break
-            break
+
+            if undo_position_selection:
+                self.board.display()
+                continue
+            else:
+                break
 
 
 

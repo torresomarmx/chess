@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # game = Game(test_board, WHITE_COLOR)
     # game.start()
 
-    test_board = Board.create_board_from_yaml_file("./src/tests/en_passant_on_next_move.yaml")
+    test_board = Board.create_board_from_yaml_file("./src/tests/en_passant_no_longer_available.yaml")
     game = Game(test_board, WHITE_COLOR)
     game.start()
 

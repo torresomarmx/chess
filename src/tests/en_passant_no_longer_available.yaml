@@ -1,0 +1,63 @@
+is_board_flipped: false
+
+white_pieces:
+  "A1" : "Ro"
+  "B1" : "Bi"
+  "C1" : "Kn"
+  "D1" : "Qu"
+  "E1" : "Ki"
+  "F1" : "Kn"
+  "G1" : "Bi"
+  "H1" : "Ro"
+  "A2" : "Pa"
+  "B2" : "Pa"
+  "C2" : "Pa"
+  "D5" : "Pa"
+  "E2" : "Pa"
+  "F3" : "Pa"
+  "G2" : "Pa"
+  "H2" : "Pa"
+
+black_pieces:
+  "A8": "Ro"
+  "B8": "Bi"
+  "C8": "Kn"
+  "D8": "Qu"
+  "E8": "Ki"
+  "F8": "Kn"
+  "G8": "Bi"
+  "H8": "Ro"
+  "A6": "Pa"
+  "B7": "Pa"
+  "C7": "Pa"
+  "D7": "Pa"
+  "E5": "Pa"
+  "F7": "Pa"
+  "G6": "Pa"
+  "H7": "Pa"
+
+white_moves_tracker:
+  - old_position: "D2"
+    new_position: "D4"
+    piece_signature: "Pa"
+
+  - old_position: "D4"
+    new_position: "D5"
+    piece_signature: "Pa"
+
+  - old_position: "F2"
+    new_position: "F3"
+    piece_signature: "Pa"
+
+black_moves_tracker:
+  - old_position: "A7"
+    new_position: "A6"
+    piece_signature: "Pa"
+
+  - old_position: "E7"
+    new_position: "E5"
+    piece_signature: "Pa"
+
+  - old_position: "G7"
+    new_position: "G6"
+    piece_signature: "Pa"
