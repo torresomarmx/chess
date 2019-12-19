@@ -6,6 +6,7 @@ from src.util.moves_tracker import MovesTracker
 from src.util.move_played import MovePlayed
 import copy
 import yaml
+import os
 
 class Board:
 
@@ -16,16 +17,60 @@ class Board:
         # y axis on grid is left to right
         self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping()
         # flipped means black is on bottom, white is on top. Default is white on bottom, black on top
-        self.__flipped = False
+        self.__is_flipped = False
         if moves_tracker is None:
             self.__moves_tracker = MovesTracker()
         else:
             self.__moves_tracker = moves_tracker
 
+    @property
+    def is_flipped(self):
+        return self.__is_flipped
+
+    def save_board_state_to_yaml_file(self, file_name):
+        white_pieces = {}
+        black_pieces = {}
+        for x in range(8):
+            for y in range(8):
+                piece = self.get_piece_on_grid_position((x, y))
+                if piece is not None:
+                    notation_position = self.get_notation_position_from_grid_position(piece.current_position)
+                    if piece.color == BLACK_COLOR:
+                        black_pieces["".join(notation_position)] = piece.get_signature()
+                    else:
+                        white_pieces["".join(notation_position)] = piece.get_signature()
+
+        file_content = {
+            "is_board_flipped" : self.__is_flipped,
+            "white_pieces" : white_pieces,
+            "black_pieces" : black_pieces,
+            "white_moves_tracker": [
+                {
+                "old_position" : "".join(move.old_position),
+                "new_position" : "".join(move.new_position),
+                "piece_signature" : move.piece_signature
+                } for move in self.__moves_tracker.white_moves
+            ],
+            "black_moves_tracker" : [
+                {
+                "old_position" : "".join(move.old_position),
+                "new_position" : "".join(move.new_position),
+                "piece_signature" : move.piece_signature
+                } for move in self.__moves_tracker.black_moves
+            ]
+        }
+        absolute_path = os.path.dirname(os.path.abspath(__file__))
+        with open(absolute_path + "/saved_states/" + file_name + ".yaml", "w") as new_file:
+            yaml.dump(file_content, new_file)
+
     @classmethod
-    def create_board_from_yaml_file(cls, file_name):
+    def create_board_from_yaml_file(cls, file_name, use_relative_path = False):
         board = None
-        with open(file_name) as file:
+        absolute_path = os.path.dirname(os.path.abspath(__file__)) + "/saved_states/" + file_name
+        path_to_search = absolute_path
+        if use_relative_path:
+            path_to_search = file_name
+        with open(path_to_search) as file:
             file_content = yaml.full_load(file)
 
             moves_tracker = MovesTracker()
@@ -197,9 +242,9 @@ class Board:
                     piece.switch_orientation()
 
         self.__grid = new_board
-        self.__flipped = False if self.__flipped else True
-        self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping(self.__flipped)
-        self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping(self.__flipped)
+        self.__is_flipped = False if self.__is_flipped else True
+        self.__rank_to_xindex_mapping = self.__create_rank_to_xindex_mapping(self.__is_flipped)
+        self.__file_to_yindex_mapping = self.__create_file_to_yindex_mapping(self.__is_flipped)
 
     def display(self, positions_to_highlight = None):
         positions_to_highlight = {} if positions_to_highlight is None else positions_to_highlight

@@ -2,6 +2,7 @@ from src.util.chess_constants import *
 from src.util.moves_tracker import MovesTracker
 from src.util.special_positions_handler import SpecialPositionsHandler
 from src.board import Board
+import sys
 
 class Game:
 
@@ -43,11 +44,17 @@ class Game:
     def __handle_new_move_for_player(self, color, available_positions):
         while True:
             print(color)
-            position_of_piece = input("Select a piece to move: ")
-            if self.board.is_valid_notation_position(position_of_piece.upper()):
+            position_of_piece = input("Select a piece to move, or press S to save state of board: ")
+            if position_of_piece.upper() == "S":
+                file_name = input("Enter a name for the yaml file: ")
+                print("Saving...")
+                self.board.save_board_state_to_yaml_file(file_name)
+                print("Done! Goodbye ")
+                sys.exit()
+            elif self.board.is_valid_notation_position(position_of_piece.upper()):
                 position_of_piece = self.board.get_grid_position_from_notation_position(position_of_piece.upper())
             else:
-                print("Invalid notation!")
+                print("Invalid input/notation!")
                 continue
 
             piece = self.board.get_piece_on_grid_position(position_of_piece)

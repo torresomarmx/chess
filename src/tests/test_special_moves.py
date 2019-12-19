@@ -4,7 +4,7 @@ from src.board import Board
 class TestBoard(unittest.TestCase):
 
     def test_en_passant_on_next_move(self):
-        board = Board.create_board_from_yaml_file("./en_passant_on_next_move.yaml")
+        board = Board.create_board_from_yaml_file("./en_passant_on_next_move.yaml", True)
         available_positions = board.get_available_positions_for_piece(
             board.get_piece_on_grid_position((3, 3))
         )
@@ -15,7 +15,7 @@ class TestBoard(unittest.TestCase):
         )
 
     def test_en_passant_no_longer_available(self):
-        board = Board.create_board_from_yaml_file("./en_passant_no_longer_available.yaml")
+        board = Board.create_board_from_yaml_file("./en_passant_no_longer_available.yaml", True)
         available_positions = board.get_available_positions_for_piece(
             board.get_piece_on_grid_position((3, 3))
         )

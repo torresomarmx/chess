@@ -1,0 +1,43 @@
+black_moves_tracker:
+- new_position: E5
+  old_position: E7
+  piece_signature: Pa
+black_pieces:
+  A7: Pa
+  A8: Ro
+  B7: Pa
+  B8: Kn
+  C7: Pa
+  C8: Bi
+  D7: Pa
+  D8: Qu
+  E5: Pa
+  E8: Ki
+  F7: Pa
+  F8: Bi
+  G7: Pa
+  G8: Kn
+  H7: Pa
+  H8: Ro
+is_board_flipped: false
+white_moves_tracker:
+- new_position: D4
+  old_position: D2
+  piece_signature: Pa
+white_pieces:
+  A1: Ro
+  A2: Pa
+  B1: Kn
+  B2: Pa
+  C1: Bi
+  C2: Pa
+  D1: Qu
+  D4: Pa
+  E1: Ki
+  E2: Pa
+  F1: Bi
+  F2: Pa
+  G1: Kn
+  G2: Pa
+  H1: Ro
+  H2: Pa
