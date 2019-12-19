@@ -66,9 +66,9 @@ class Pawn(Piece):
     def __made_first_move(self):
         current_rank = self.current_position[0]
         if self.orientation == NORTH_TO_SOUTH_ORIENTATION:
-            return current_rank != Pawn.NORTH_TO_SOUTH_STARTER_RANK
+            return current_rank != Pawn.NORTH_TO_SOUTH_STARTER_RANK and self.number_of_moves == 0
         else:
-            return current_rank != Pawn.SOUTH_TO_NORTH_STARTER_RANK
+            return current_rank != Pawn.SOUTH_TO_NORTH_STARTER_RANK and self.number_of_moves == 0
 
 
 
