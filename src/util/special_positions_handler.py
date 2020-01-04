@@ -40,9 +40,9 @@ class SpecialPositionsHandler:
         return castling_positions
 
     @classmethod
-    def is_pawn_ready_for_promotion(cls, pawn, new_position):
-        return (pawn.orientation == NORTH_TO_SOUTH_ORIENTATION and new_position[0] == 7) or \
-            (pawn.orientation == SOUTH_TO_NORTH_ORIENTATION and new_position[0] == 0)
+    def is_pawn_ready_for_promotion(cls, pawn):
+        return ((pawn.orientation == NORTH_TO_SOUTH_ORIENTATION and pawn.current_position[0] == 6) or
+            (pawn.orientation == SOUTH_TO_NORTH_ORIENTATION and pawn.current_position[0] == 1))
 
     @classmethod
     def get_promotion_piece(cls, color):

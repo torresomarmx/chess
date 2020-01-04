@@ -1,0 +1,19 @@
+black_moves_tracker: []
+black_pieces:
+  D8: Qu
+  F7: Pa
+  F8: Ro
+  G6: Pa
+  G7: Bi
+  G8: Ki
+  H7: Pa
+is_board_flipped: false
+white_moves_tracker: []
+white_pieces:
+  F2: Pa
+  G2: Pa
+  H2: Pa
+  G1: Ki
+  C3: Bi
+  F6: Qu
+

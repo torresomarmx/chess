@@ -93,7 +93,7 @@ class Game:
                         if chosen_position == en_passant_position:
                             position_of_pawn_to_take = (piece.current_position[0], en_passant_position[1])
                             self.board.move_piece_to_new_position(piece, chosen_position, True, position_of_pawn_to_take)
-                        elif SpecialPositionsHandler.is_pawn_ready_for_promotion(piece, chosen_position):
+                        elif SpecialPositionsHandler.is_pawn_ready_for_promotion(piece):
                             new_promotion_piece = SpecialPositionsHandler.get_promotion_piece(piece.color)
                             self.board.move_piece_to_new_position(piece, chosen_position, True)
                             self.board.add_piece_to_board(new_promotion_piece, chosen_position)
